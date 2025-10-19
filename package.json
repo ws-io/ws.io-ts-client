@@ -1,18 +1,28 @@
 {
-  "name": "package-template",
+  "name": "ws.io-client",
   "type": "module",
   "version": "0.1.0",
   "description": "",
-  "author": "",
+  "author": "kiki-kanri",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/author-or-organization/repo-name.git"
+    "url": "git+https://github.com/ws-io/ws.io-ts-client.git"
   },
   "keywords": [],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": null
+    },
+    "./*": "./dist/*.js",
+    "./index": {
+      "types": null,
+      "import": null,
+      "require": null
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -57,8 +67,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "esbuild",
-      "unrs-resolver"
+      "esbuild"
     ]
   }
 }

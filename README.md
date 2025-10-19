@@ -1,4 +1,4 @@
-# package-name
+# ws.io-client
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -20,7 +20,7 @@ Description
 Using [pnpm](https://pnpm.io):
 
 ```bash
-pnpm add package-name
+pnpm add ws.io-client
 ```
 
 You can also use `yarn`, `npm`, or `bun`.
@@ -32,14 +32,14 @@ You can also use `yarn`, `npm`, or `bun`.
 [MIT License](./LICENSE)
 
 <!-- Badges -->
-[npm-version-href]: https://npmjs.com/package/package-name
-[npm-version-src]: https://img.shields.io/npm/v/package-name/latest.svg?colorA=18181b&colorB=28cf8d&style=flat
+[npm-version-href]: https://npmjs.com/package/ws.io-client
+[npm-version-src]: https://img.shields.io/npm/v/ws.io-client/latest.svg?colorA=18181b&colorB=28cf8d&style=flat
 
-[npm-downloads-href]: https://npmjs.com/package/package-name
-[npm-downloads-src]: https://img.shields.io/npm/dm/package-name.svg?colorA=18181b&colorB=28cf8d&style=flat
+[npm-downloads-href]: https://npmjs.com/package/ws.io-client
+[npm-downloads-src]: https://img.shields.io/npm/dm/ws.io-client.svg?colorA=18181b&colorB=28cf8d&style=flat
 
-[codecov-href]: https://codecov.io/gh/author-or-organization/repo-name
-[codecov-src]: https://codecov.io/gh/author-or-organization/repo-name/graph/badge.svg?token=
+[codecov-href]: https://codecov.io/gh/ws-io/ws.io-ts-client
+[codecov-src]: https://codecov.io/gh/ws-io/ws.io-ts-client/graph/badge.svg?token=
 
-[license-href]: https://github.com/author-or-organization/repo-name/blob/main/LICENSE
-[license-src]: https://img.shields.io/github/license/author-or-organization/repo-name?colorA=18181b&colorB=28cf8d&style=flat
+[license-href]: https://github.com/ws-io/ws.io-ts-client/blob/main/LICENSE
+[license-src]: https://img.shields.io/github/license/ws-io/ws.io-ts-client?colorA=18181b&colorB=28cf8d&style=flat
