@@ -1,21 +1,13 @@
-import { parseInnerPacket } from '../';
-import type {
-    WsIoPacket,
-    WsIoPacketData,
-} from '../';
+import { WsIoPacket } from '../';
 
-// Constants
-export const isText = true;
-
-// Functions
-export const decode = (data: string) => parseInnerPacket(JSON.parse(data));
-export const decodeData = <T>(bytes: WsIoPacketData): T => JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
+export const encode = (packet: WsIoPacket) => JSON.stringify(WsIoPacket.toInner(packet));
 export const encodeData = (data: any) => Array.from(new TextEncoder().encode(JSON.stringify(data)));
 
-export function encode(packet: WsIoPacket) {
-    return JSON.stringify({
-        d: packet.data,
-        k: packet.key,
-        t: packet.type,
-    });
+export function decode(data: ArrayBuffer | string) {
+    if (typeof data !== 'string') throw new Error('Invalid packet format: expected string data');
+    return WsIoPacket.fromInner(JSON.parse(data));
+}
+
+export function decodeData<T>(bytes: number[]): null | T {
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bytes)));
 }
