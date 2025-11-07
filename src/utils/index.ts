@@ -1,6 +1,19 @@
 import type { Promisable } from 'type-fest';
 
-export const sleep = (ms: number) => new Promise((resolve) => void setTimeout(resolve, ms));
+export function sleep(ms: number, signal?: AbortSignal) {
+    return new Promise((resolve) => {
+        const timeout = setTimeout(resolve, ms);
+        if (signal) {
+            signal.addEventListener(
+                'abort',
+                () => {
+                    clearTimeout(timeout);
+                    resolve(undefined);
+                },
+            );
+        }
+    });
+}
 
 export function waitWithTimeout<T>(timeoutMs: number, promise?: Promisable<T>): Promise<T | undefined> {
     if (!promise) return Promise.resolve(undefined);

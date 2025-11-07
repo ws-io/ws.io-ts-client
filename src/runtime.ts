@@ -22,6 +22,7 @@ export class WsIoClientRuntime {
     #connectUrl: URL;
     #session?: WsIoClientSession;
     #status = new AtomicStatus(RuntimeStatus.Stopped);
+    #wakeReconnectWaitAbortController?: AbortController;
 
     // Internal properties
     _client: WsIoClient;
@@ -82,8 +83,8 @@ export class WsIoClientRuntime {
                 if (!this.#status.is(RuntimeStatus.Running)) break;
                 await this.#runConnection();
                 if (this.#status.is(RuntimeStatus.Running)) {
-                    // TODO: wake break
-                    await sleep(this._config.reconnectDelay);
+                    this.#wakeReconnectWaitAbortController = new AbortController();
+                    await sleep(this._config.reconnectDelay, this.#wakeReconnectWaitAbortController.signal);
                 }
             }
         })();
@@ -107,17 +108,17 @@ export class WsIoClientRuntime {
         // Close session
         this.#session?._close();
 
-        // Cancel all ongoing operations via cancel token and store a new one
-        // TODO?
-
         // Abort event-message-flush task if still active
         // TODO
+
+        // Cancel all ongoing operations via cancel token and store a new one
+        // TODO?
 
         // Drop all pending event messages in the channel
         // TODO
 
         // Wake reconnect loop to break out of sleep early
-        // TODO
+        this.#wakeReconnectWaitAbortController?.abort();
 
         // Await connection loop task termination
         await this.#connectionLoopPromise;
