@@ -7,6 +7,9 @@ export interface WsIoClientConfig {
     initHandler?: (session: WsIoClientSession, data?: any) => Promisable<any>;
     initHandlerTimeout: number;
     initPacketTimeout: number;
+    onSessionCloseHandler?: (session: WsIoClientSession) => Promisable<void>;
+    onSessionCloseHandlerTimeout: number;
+    onSessionReadyHandler?: (session: WsIoClientSession) => Promisable<void>;
     packetCodec: WsIoPacketCodec;
     readyPacketTimeout: number;
     reconnectDelay: number;
