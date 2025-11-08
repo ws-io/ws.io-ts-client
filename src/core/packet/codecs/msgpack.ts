@@ -1,9 +1,17 @@
 import {
+    isNativeAccelerationEnabled,
     decode as msgPackDecode,
     encode as msgPackEncode,
 } from 'msgpackr';
 
 import { WsIoPacket } from '../';
+
+if (
+    !isNativeAccelerationEnabled
+    && typeof document !== 'undefined'
+    && typeof globalThis.window === 'object'
+    && typeof window !== 'undefined'
+) console.warn('Native acceleration not enabled for msgpackr, verify that install finished properly');
 
 export const decodeData = <T>(bytes: number[]): null | T => msgPackDecode(Uint8Array.from(bytes));
 export const encode = (packet: WsIoPacket) => msgPackEncode(WsIoPacket.toInner(packet));
