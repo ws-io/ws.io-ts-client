@@ -48,9 +48,14 @@ export class WsIoClientSession {
     }
 
     // Private methods
+    #handleDisconnectPacket() {
+        this.#runtime.disconnect().catch(() => {});
+    }
+
     async #handleIncomingPacket(data: ArrayBuffer | string) {
         const packet = this.#runtime._config.packetCodec.decode(data);
         switch (packet.type) {
+            case WsIoPacketType.Disconnect: return this.#handleDisconnectPacket();
             case WsIoPacketType.Init: return await this.#handleInitPacket(packet.data);
             case WsIoPacketType.Ready: return this.#handleReadyPacket();
         }
