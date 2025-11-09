@@ -71,7 +71,7 @@ export class WsIoClientSession {
             default: throw new Error(`Received init packet in invalid status: ${status}`);
         }
 
-        // Clear init-timeout task if still active
+        // Clear init-timeout task
         if (this.#initTimeoutTimeout) clearTimeout(this.#initTimeoutTimeout);
 
         // Invoke initHandler with timeout protection if configured
@@ -113,7 +113,7 @@ export class WsIoClientSession {
             default: throw new Error(`Received ready packet in invalid status: ${status}`);
         }
 
-        // Clear ready-timeout task if still active
+        // Clear ready-timeout task
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
 
         // Wake event message flush task
@@ -132,7 +132,7 @@ export class WsIoClientSession {
         // Set state to Closing
         this.#status.store(SessionStatus.Closing);
 
-        // Clear timeouts if still active
+        // Clear timeouts
         if (this.#initTimeoutTimeout) clearTimeout(this.#initTimeoutTimeout);
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
 
