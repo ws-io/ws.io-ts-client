@@ -61,7 +61,9 @@
     }
   },
   "dependencies": {
-    "type-fest": "^5.2.0"
+    "p-mutex": "^1.0.0",
+    "type-fest": "^5.2.0",
+    "yocto-queue": "^1.2.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
