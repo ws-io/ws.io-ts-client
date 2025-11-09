@@ -1,3 +1,4 @@
+import Mutex from 'p-mutex';
 import type { ReadonlyDeep } from 'type-fest';
 
 import { AtomicStatus } from './core/atomic/status';
@@ -5,6 +6,7 @@ import * as wsIoPacketJsonCodec from './core/packet/codecs/json';
 import { WsIoClientSession } from './session';
 import type { WsIoClientConfig } from './types/config';
 import { sleep } from './utils';
+import { AsyncQueue } from './utils/queue';
 
 import type { WsIoClient } from './';
 
@@ -20,6 +22,9 @@ export class WsIoClientRuntime {
     // Private properties
     #connectionLoopPromise?: Promise<void>;
     #connectUrl: URL;
+    #operateLock = new Mutex();
+    #sendEventDataPromise?: Promise<void>;
+    #sendEventDataQueue = new AsyncQueue<ArrayBufferView | string>();
     #session?: WsIoClientSession;
     #status = new AtomicStatus(RuntimeStatus.Stopped);
     #wakeReconnectWaitAbortController?: AbortController;
@@ -65,64 +70,67 @@ export class WsIoClientRuntime {
     }
 
     // Public methods
-    connect() {
+    async connect() {
         // Lock to prevent concurrent operation
-        // TODO
-
-        switch (this.#status.get()) {
-            case RuntimeStatus.Running: return;
-            case RuntimeStatus.Stopped:
-                this.#status.store(RuntimeStatus.Running);
-                break;
-            default: throw new Error('unreachable');
-        }
-
-        // Create connection loop promise
-        this.#connectionLoopPromise = (async () => {
-            while (true) {
-                if (!this.#status.is(RuntimeStatus.Running)) break;
-                await this.#runConnection();
-                if (this.#status.is(RuntimeStatus.Running)) {
-                    this.#wakeReconnectWaitAbortController = new AbortController();
-                    await sleep(this._config.reconnectDelay, this.#wakeReconnectWaitAbortController.signal);
-                }
+        await this.#operateLock.withLock(() => {
+            switch (this.#status.get()) {
+                case RuntimeStatus.Running: return;
+                case RuntimeStatus.Stopped:
+                    this.#status.store(RuntimeStatus.Running);
+                    break;
+                default: throw new Error('unreachable');
             }
-        })();
 
-        // Create flush messages promise
-        // TODO
+            // Create connection loop promise
+            this.#connectionLoopPromise = (async () => {
+                while (true) {
+                    if (!this.#status.is(RuntimeStatus.Running)) break;
+                    await this.#runConnection();
+                    if (this.#status.is(RuntimeStatus.Running)) {
+                        this.#wakeReconnectWaitAbortController = new AbortController();
+                        await sleep(this._config.reconnectDelay, this.#wakeReconnectWaitAbortController.signal);
+                    }
+                }
+            })();
+
+            // Create send event data promise
+            this.#sendEventDataQueue.reopen();
+            this.#sendEventDataPromise = (async () => {
+                for await (const data of this.#sendEventDataQueue) {
+                    // TODO
+                }
+            })();
+        });
     }
 
     async disconnect() {
         // Lock to prevent concurrent operation
-        // TODO
+        await this.#operateLock.withLock(async () => {
+            switch (this.#status.get()) {
+                case RuntimeStatus.Running:
+                    this.#status.store(RuntimeStatus.Stopping);
+                    break;
+                case RuntimeStatus.Stopped: return;
+                default: throw new Error('unreachable');
+            }
 
-        switch (this.#status.get()) {
-            case RuntimeStatus.Running:
-                this.#status.store(RuntimeStatus.Stopping);
-                break;
-            case RuntimeStatus.Stopped: return;
-            default: throw new Error('unreachable');
-        }
+            // Close session
+            this.#session?._close();
 
-        // Close session
-        this.#session?._close();
+            // Close send event data queue and await send event data promise termination
+            this.#sendEventDataQueue.closeAndClear();
+            await this.#sendEventDataPromise;
 
-        // Abort event-message-flush task if still active
-        // TODO
+            // Cancel all ongoing operations via cancel token and store a new one
+            // TODO?
 
-        // Cancel all ongoing operations via cancel token and store a new one
-        // TODO?
+            // Wake reconnect loop to break out of sleep early
+            this.#wakeReconnectWaitAbortController?.abort();
 
-        // Drop all pending event messages in the channel
-        // TODO
+            // Await connection loop task termination
+            await this.#connectionLoopPromise;
 
-        // Wake reconnect loop to break out of sleep early
-        this.#wakeReconnectWaitAbortController?.abort();
-
-        // Await connection loop task termination
-        await this.#connectionLoopPromise;
-
-        this.#status.store(RuntimeStatus.Stopped);
+            this.#status.store(RuntimeStatus.Stopped);
+        });
     }
 }
