@@ -34,7 +34,7 @@ export class WsIoPacket {
 
     // Public static methods
     static fromInner(innerPacket: InnerPacket) {
-        if (!innerPacket[0]) throw new Error('Missing packet type');
+        if (innerPacket[0] === undefined) throw new Error('Missing packet type');
         if (!wsIoPacketTypes.includes(innerPacket[0])) throw new Error(`Invalid packet type: ${innerPacket[0]}`);
         if (innerPacket[1] !== null && typeof innerPacket[1] !== 'string') {
             throw new Error(`Invalid packet key: ${innerPacket[1]}`);
