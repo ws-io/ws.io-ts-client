@@ -49,7 +49,7 @@ export class WsIoClientSession {
 
     // Private methods
     #handleDisconnectPacket() {
-        this.#runtime.disconnect().catch(() => {});
+        this.#runtime._disconnect().catch(() => {});
     }
 
     async #handleIncomingPacket(data: ArrayBuffer | string) {
@@ -116,8 +116,8 @@ export class WsIoClientSession {
         // Clear ready-timeout task
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
 
-        // Wake event message flush task
-        // TODO
+        // Wake send event data promise
+        this.#runtime._wakeSendEventDataPromise?.();
 
         // Invoke onSessionReadyHandler if configured
         (async () => await this.#runtime._config.onSessionReadyHandler?.(this))().catch(() => {});
@@ -160,6 +160,12 @@ export class WsIoClientSession {
 
         // Send websocket close frame to initiate graceful shutdown
         this.#ws.close();
+    }
+
+    _emit_event_data(data: ArrayBufferView | string) {
+        this.#status.ensure(SessionStatus.Ready, (status) => `Cannot emit event data in invalid status: ${status}`);
+        this.#ws.send(data);
+        return true;
     }
 
     // Public getters

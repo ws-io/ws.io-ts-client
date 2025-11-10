@@ -51,6 +51,10 @@ export class WsIoPacket {
         };
     }
 
+    static newEvent(event: string, data?: WsIoPacketData) {
+        return this.#new(WsIoPacketType.Event, event, data);
+    }
+
     static newInit(data?: WsIoPacketData) {
         return this.#new(WsIoPacketType.Init, undefined, data);
     }

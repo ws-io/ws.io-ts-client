@@ -2,6 +2,7 @@ import Mutex from 'p-mutex';
 import type { ReadonlyDeep } from 'type-fest';
 
 import { AtomicStatus } from './core/atomic/status';
+import { WsIoPacket } from './core/packet';
 import * as wsIoPacketJsonCodec from './core/packet/codecs/json';
 import { WsIoClientSession } from './session';
 import type { WsIoClientConfig } from './types/config';
@@ -32,6 +33,7 @@ export class WsIoClientRuntime {
     // Internal properties
     _client: WsIoClient;
     _config: ReadonlyDeep<WsIoClientConfig>;
+    _wakeSendEventDataPromise?: () => void;
 
     constructor(client: WsIoClient, url: string | URL, config?: Partial<WsIoClientConfig>) {
         if (typeof url === 'string') url = new URL(url);
@@ -69,8 +71,8 @@ export class WsIoClientRuntime {
         await session._cleanup();
     }
 
-    // Public methods
-    async connect() {
+    // Internal methods
+    async _connect() {
         // Lock to prevent concurrent operation
         await this.#operateLock.withLock(() => {
             switch (this.#status.get()) {
@@ -97,13 +99,18 @@ export class WsIoClientRuntime {
             this.#sendEventDataQueue.reopen();
             this.#sendEventDataPromise = (async () => {
                 for await (const data of this.#sendEventDataQueue) {
-                    // TODO
+                    while (true) {
+                        try {
+                            if (this.#session?._emit_event_data(data)) break;
+                        } catch {}
+                        await new Promise<void>((resolve) => void (this._wakeSendEventDataPromise = resolve));
+                    }
                 }
             })();
         });
     }
 
-    async disconnect() {
+    async _disconnect() {
         // Lock to prevent concurrent operation
         await this.#operateLock.withLock(async () => {
             switch (this.#status.get()) {
@@ -119,6 +126,7 @@ export class WsIoClientRuntime {
 
             // Close send event data queue and await send event data promise termination
             this.#sendEventDataQueue.closeAndClear();
+            this._wakeSendEventDataPromise?.();
             await this.#sendEventDataPromise;
 
             // Cancel all ongoing operations via cancel token and store a new one
@@ -127,10 +135,19 @@ export class WsIoClientRuntime {
             // Wake reconnect loop to break out of sleep early
             this.#wakeReconnectWaitAbortController?.abort();
 
-            // Await connection loop task termination
+            // Await connection loop promise termination
             await this.#connectionLoopPromise;
 
             this.#status.store(RuntimeStatus.Stopped);
         });
+    }
+
+    _emit(event: string, params?: any[]) {
+        this.#status.ensure(RuntimeStatus.Running, (status) => `Cannot emit in invalid status: ${status}`);
+        this.#sendEventDataQueue.send(
+            this._config.packetCodec.encode(
+                WsIoPacket.newEvent(event, params ? this._config.packetCodec.encodeData(params) : undefined),
+            ),
+        );
     }
 }
