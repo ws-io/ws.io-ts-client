@@ -1,7 +1,7 @@
 {
   "name": "ws.io-client",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "author": "kiki-kanri",
   "license": "MIT",
@@ -18,12 +18,42 @@
       "require": null
     },
     "./*": "./dist/*.js",
+    "./core/packet": {
+      "types": "./dist/core/packet/index.d.ts",
+      "import": "./dist/core/packet/index.js",
+      "require": null
+    },
+    "./core/packet/codecs": {
+      "types": "./dist/core/packet/codecs/index.d.ts",
+      "import": "./dist/core/packet/codecs/index.js",
+      "require": null
+    },
+    "./core/packet/codecs/index": {
+      "types": null,
+      "import": null,
+      "require": null
+    },
+    "./core/packet/index": {
+      "types": null,
+      "import": null,
+      "require": null
+    },
     "./index": {
       "types": null,
       "import": null,
       "require": null
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": null
+    },
+    "./utils/index": {
+      "types": null,
+      "import": null,
+      "require": null
+    }
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

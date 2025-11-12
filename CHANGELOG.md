@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.1
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.0...v0.2.1)
+
+### 🏡 Chore
+
+- Update tsdown entry config ([bccadd4](https://github.com/ws-io/ws.io-ts-client/commit/bccadd4))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.0
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.1.0...v0.2.0)
