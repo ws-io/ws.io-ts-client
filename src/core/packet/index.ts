@@ -24,7 +24,7 @@ const wsIoPacketTypes = getEnumNumberValues(WsIoPacketType);
 // eslint-disable-next-line ts/no-unsafe-declaration-merging
 export class WsIoPacket {
     // Private static methods
-    static #new(type: WsIoPacketType, key?: string, data?: WsIoPacketData) {
+    private static new(type: WsIoPacketType, key?: string, data?: WsIoPacketData) {
         return {
             data,
             key,
@@ -52,11 +52,11 @@ export class WsIoPacket {
     }
 
     static newEvent(event: string, data?: WsIoPacketData) {
-        return this.#new(WsIoPacketType.Event, event, data);
+        return this.new(WsIoPacketType.Event, event, data);
     }
 
     static newInit(data?: WsIoPacketData) {
-        return this.#new(WsIoPacketType.Init, undefined, data);
+        return this.new(WsIoPacketType.Init, undefined, data);
     }
 
     static toInner(packet: WsIoPacket) {
