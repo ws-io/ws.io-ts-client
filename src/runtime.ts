@@ -23,6 +23,7 @@ export class WsIoClientRuntime {
     // Private properties
     #connectionLoopPromise?: Promise<void>;
     #connectUrl: URL;
+    #nextEventHandlerId = 0;
     #operateLock = new Mutex();
     #sendEventDataPromise?: Promise<void>;
     #sendEventDataQueue = new AsyncQueue<ArrayBufferView | string>();
@@ -33,6 +34,7 @@ export class WsIoClientRuntime {
     // Internal properties
     _client: WsIoClient;
     _config: ReadonlyDeep<WsIoClientConfig>;
+    _eventHandlers: Record<string, Map<number, (...args: any[]) => any[]>> = {};
     _wakeSendEventDataPromise?: () => void;
 
     constructor(client: WsIoClient, url: string | URL, config?: Partial<WsIoClientConfig>) {
@@ -149,5 +151,24 @@ export class WsIoClientRuntime {
                 WsIoPacket.newEvent(event, params ? this._config.packetCodec.encodeData(params) : undefined),
             ),
         );
+    }
+
+    _on(event: string, callback: (...args: any[]) => any) {
+        const handlers = this._eventHandlers[event] ??= new Map();
+        const nextEventHandlerId = this.#nextEventHandlerId++;
+        handlers.set(nextEventHandlerId, callback);
+        return nextEventHandlerId;
+    }
+
+    _off(event: string) {
+        delete this._eventHandlers[event];
+    }
+
+    _offByHandlerId(event: string, handlerId: number) {
+        const handlers = this._eventHandlers[event];
+        if (handlers) {
+            handlers.delete(handlerId);
+            if (!handlers.size) this._off(event);
+        }
     }
 }
