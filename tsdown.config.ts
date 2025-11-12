@@ -16,7 +16,7 @@ interface PackageJsonExportEntry {
 export default defineConfig({
     clean: true,
     dts: true,
-    entry: ['./src/index.ts'],
+    entry: ['./src/**/*.ts'],
     exports: {
         customExports(exports) {
             Object.entries(exports).forEach(([key, value]: [string, string]) => {
