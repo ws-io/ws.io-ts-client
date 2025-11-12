@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.2
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.1...v0.2.2)
+
+### 💅 Refactors
+
+- Replace `WsIoPacket.#new` to `private static new` ([8444a48](https://github.com/ws-io/ws.io-ts-client/commit/8444a48))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.1
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.0...v0.2.1)
