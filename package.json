@@ -1,7 +1,7 @@
 {
   "name": "ws.io-client",
   "type": "module",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "",
   "author": "kiki-kanri",
   "license": "MIT",
@@ -18,6 +18,16 @@
       "require": null
     },
     "./*": "./dist/*.js",
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js",
+      "require": null
+    },
+    "./constants/index": {
+      "types": null,
+      "import": null,
+      "require": null
+    },
     "./core/packet": {
       "types": "./dist/core/packet/index.d.ts",
       "import": "./dist/core/packet/index.js",

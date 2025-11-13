@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.2.9
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.8...v0.2.9)
+
+### 🚀 Enhancements
+
+- Send periodic 1-byte ping after ready to keep connection alive and close on send failure ([1e23c80](https://github.com/ws-io/ws.io-ts-client/commit/1e23c80))
+
+### 🩹 Fixes
+
+- Correct `isNativeAccelerationEnabled` check and warn output logic in `cbor` and `msgpack` packet codecs ([4856f31](https://github.com/ws-io/ws.io-ts-client/commit/4856f31))
+
+### 💅 Refactors
+
+- Replace `Uint8Array.from` with `new Uint8Array` ([2e74d86](https://github.com/ws-io/ws.io-ts-client/commit/2e74d86))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.8
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.7...v0.2.8)
