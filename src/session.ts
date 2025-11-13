@@ -23,6 +23,7 @@ enum SessionStatus {
 export class WsIoClientSession {
     // Private properties
     #initTimeoutTimeout?: NodeJS.Timeout;
+    #pingIntervalTimer?: NodeJS.Timeout;
     #readyTimeoutTimeout?: NodeJS.Timeout;
     #runtime: WsIoClientRuntime;
     #status = new AtomicStatus(SessionStatus.Created);
@@ -127,6 +128,18 @@ export class WsIoClientSession {
         // Clear ready-timeout task
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
 
+        // Create ping interval timer to send 1-byte heartbeat frame to keep the connection alive
+        this.#pingIntervalTimer = setInterval(
+            () => {
+                try {
+                    this.#ws.send(new Uint8Array([0x01]));
+                } catch {
+                    this._close();
+                }
+            },
+            this.#runtime._config.pingInterval,
+        );
+
         // Wake send event data promise
         this.#runtime._wakeSendEventDataPromise?.();
 
@@ -145,6 +158,7 @@ export class WsIoClientSession {
 
         // Clear timeouts
         if (this.#initTimeoutTimeout) clearTimeout(this.#initTimeoutTimeout);
+        if (this.#pingIntervalTimer) clearInterval(this.#pingIntervalTimer);
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
 
         // Cancel all ongoing operations via cancel token

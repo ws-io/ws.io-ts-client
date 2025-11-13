@@ -47,12 +47,13 @@ export class WsIoClientRuntime {
         this._config = defu(
             config,
             {
-                initHandlerTimeout: 3000,
-                initPacketTimeout: 3000,
-                onSessionCloseHandlerTimeout: 2000,
+                initHandlerTimeout: 3 * 1000,
+                initPacketTimeout: 3 * 1000,
+                onSessionCloseHandlerTimeout: 2 * 1000,
                 packetCodec: wsIoPacketJsonCodec,
-                readyPacketTimeout: 3000,
-                reconnectDelay: 1000,
+                pingInterval: 30 * 1000,
+                readyPacketTimeout: 3 * 1000,
+                reconnectDelay: 1 * 1000,
                 requestPath: '/ws.io',
             },
         );

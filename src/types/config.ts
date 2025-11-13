@@ -11,6 +11,7 @@ export interface WsIoClientConfig {
     onSessionCloseHandlerTimeout: number;
     onSessionReadyHandler?: (session: WsIoClientSession) => Promisable<void>;
     packetCodec: WsIoPacketCodec;
+    pingInterval: number;
     readyPacketTimeout: number;
     reconnectDelay: number;
     requestPath: string;
