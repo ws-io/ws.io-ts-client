@@ -154,7 +154,7 @@ export class WsIoClientRuntime {
     }
 
     _on(event: string, callback: (...args: any[]) => any) {
-        const handlers = this._eventHandlers[event] ??= new Map();
+        const handlers = this._eventHandlers[event] ||= new Map();
         const nextEventHandlerId = this.#nextEventHandlerId++;
         handlers.set(nextEventHandlerId, callback);
         return nextEventHandlerId;
