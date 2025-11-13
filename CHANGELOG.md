@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.4
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.3...v0.2.4)
+
+### 🩹 Fixes
+
+- Ensure events map type is correctly passed into WsIoClient ([18db27c](https://github.com/ws-io/ws.io-ts-client/commit/18db27c))
+
+### 🏡 Chore
+
+- Update CHANGELOG ([810980b](https://github.com/ws-io/ws.io-ts-client/commit/810980b))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.3
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.2...v0.2.3)
