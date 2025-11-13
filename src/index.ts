@@ -1,12 +1,16 @@
 import type { Promisable } from 'type-fest';
 
 import { WsIoClientRuntime } from './runtime';
+import type {
+    DefaultEventsMap,
+    EventsMap,
+} from './types';
 import type { WsIoClientConfig } from './types/config';
 
 // Classes
 export class WsIoClient<
-    ToServerEvents extends Record<string, (...args: any[]) => any> = Record<string, never>,
-    ToClientEvents extends Record<string, (...args: any[]) => any> = Record<string, never>,
+    ToServerEvents extends EventsMap = DefaultEventsMap,
+    ToClientEvents extends EventsMap = DefaultEventsMap,
 > {
     #runtime: WsIoClientRuntime;
 

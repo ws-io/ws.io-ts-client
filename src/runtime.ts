@@ -34,7 +34,7 @@ export class WsIoClientRuntime {
     // Internal properties
     _client: WsIoClient;
     _config: ReadonlyDeep<WsIoClientConfig>;
-    _eventHandlers: Record<string, Map<number, (...args: any[]) => any[]>> = {};
+    _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
     _wakeSendEventDataPromise?: () => void;
 
     constructor(client: WsIoClient, url: string | URL, config?: Partial<WsIoClientConfig>) {
