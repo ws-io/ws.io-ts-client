@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.2.3
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.2...v0.2.3)
+
+### 💅 Refactors
+
+- Adjust timing of status check in handle event packet ([d427b8e](https://github.com/ws-io/ws.io-ts-client/commit/d427b8e))
+
+### 🏡 Chore
+
+- Change `??=` to ` ([](https://github.com/ws-io/ws.io-ts-client/commit/))
+
+### ❤️ Contributors
+
+- =`
+- Kiki-kanri
+
 ## v0.2.2
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.1...v0.2.2)
