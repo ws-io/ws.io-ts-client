@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.8
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.7...v0.2.8)
+
+### 🩹 Fixes
+
+- Correct callback type parameter when registering events ([f2d20da](https://github.com/ws-io/ws.io-ts-client/commit/f2d20da))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.7
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.6...v0.2.7)
