@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      defu:
+        specifier: ^6.1.4
+        version: 6.1.4
       p-mutex:
         specifier: ^1.0.0
         version: 1.0.0

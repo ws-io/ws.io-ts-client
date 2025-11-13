@@ -1,3 +1,4 @@
+import { defu } from 'defu';
 import Mutex from 'p-mutex';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -43,8 +44,8 @@ export class WsIoClientRuntime {
             throw new Error(`Invalid URL scheme: ${url.protocol.slice(0, -1)}`);
         }
 
-        this._config = Object.assign(
-            { ...config },
+        this._config = defu(
+            config,
             {
                 initHandlerTimeout: 3000,
                 initPacketTimeout: 3000,
