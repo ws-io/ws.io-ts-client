@@ -53,7 +53,6 @@ export class WsIoClientSession {
     }
 
     #handleEventPacket(event: string, packetData?: number[]) {
-        if (!this.isReady) return;
         const handlers = this.#runtime._eventHandlers[event];
         if (!handlers) return;
         const data = packetData ? this.#runtime._config.packetCodec.decodeData<any[]>(packetData) || [] : [];
@@ -65,6 +64,7 @@ export class WsIoClientSession {
         switch (packet.type) {
             case WsIoPacketType.Disconnect: return this.#handleDisconnectPacket();
             case WsIoPacketType.Event:
+                if (!this.isReady) return;
                 if (!packet.key) throw new Error('Event packet missing key');
                 return this.#handleEventPacket(packet.key, packet.data as number[]);
             case WsIoPacketType.Init: return await this.#handleInitPacket(packet.data);
