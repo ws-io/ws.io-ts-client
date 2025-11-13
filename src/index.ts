@@ -37,7 +37,7 @@ export class WsIoClient<
 
     on<E extends keyof ToClientEvents | (string & {})>(
         event: E,
-        callback: E extends keyof ToServerEvents ? ToClientEvents[E] : (...args: any[]) => Promisable<any>,
+        callback: E extends keyof ToClientEvents ? ToClientEvents[E] : (...args: any) => Promisable<any>,
     ) {
         if (typeof event !== 'string') throw new Error('Event must be a string');
         return this.#runtime._on(event, callback);
