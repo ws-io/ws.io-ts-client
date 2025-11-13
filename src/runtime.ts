@@ -43,16 +43,18 @@ export class WsIoClientRuntime {
             throw new Error(`Invalid URL scheme: ${url.protocol.slice(0, -1)}`);
         }
 
-        this._config = {
-            initHandlerTimeout: 3000,
-            initPacketTimeout: 3000,
-            onSessionCloseHandlerTimeout: 2000,
-            packetCodec: wsIoPacketJsonCodec,
-            readyPacketTimeout: 3000,
-            reconnectDelay: 1000,
-            requestPath: '/ws.io',
-            ...config,
-        };
+        this._config = Object.assign(
+            { ...config },
+            {
+                initHandlerTimeout: 3000,
+                initPacketTimeout: 3000,
+                onSessionCloseHandlerTimeout: 2000,
+                packetCodec: wsIoPacketJsonCodec,
+                readyPacketTimeout: 3000,
+                reconnectDelay: 1000,
+                requestPath: '/ws.io',
+            },
+        );
 
         url.searchParams.set('namespace', url.pathname.replaceAll(/\/+/g, '/'));
         url.pathname = this._config.requestPath.replaceAll(/\/+/g, '/');
