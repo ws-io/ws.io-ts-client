@@ -3,5 +3,5 @@ export interface DefaultEventsMap {
 }
 
 export interface EventsMap {
-    [event: string]: (...args: any[]) => any;
+    [event: string]: any;
 }
