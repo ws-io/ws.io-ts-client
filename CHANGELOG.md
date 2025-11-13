@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.7
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.6...v0.2.7)
+
+### 🩹 Fixes
+
+- Correct default config merging logic ([f9492d0](https://github.com/ws-io/ws.io-ts-client/commit/f9492d0))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.6
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.5...v0.2.6)
