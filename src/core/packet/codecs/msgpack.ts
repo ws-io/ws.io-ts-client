@@ -11,7 +11,7 @@ if (!isNativeAccelerationEnabled && !isBrowser) {
     console.warn('Native acceleration not enabled for msgpackr, verify that install finished properly');
 }
 
-export const decodeData = <T>(bytes: number[]): null | T => msgpackDecode(Uint8Array.from(bytes));
+export const decodeData = <T>(bytes: number[]): null | T => msgpackDecode(new Uint8Array(bytes));
 export const encode = (packet: WsIoPacket) => msgpackEncode(WsIoPacket.toInner(packet));
 export const encodeData = (data: any) => msgpackEncode(data);
 

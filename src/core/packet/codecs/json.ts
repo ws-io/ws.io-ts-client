@@ -9,5 +9,5 @@ export function decode(data: ArrayBuffer | string) {
 }
 
 export function decodeData<T>(bytes: number[]): null | T {
-    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bytes)));
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
 }

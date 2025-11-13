@@ -11,7 +11,7 @@ if (!isNativeAccelerationEnabled && !isBrowser) {
     console.warn('Native acceleration not enabled for cbor-x, verify that install finished properly');
 }
 
-export const decodeData = <T>(bytes: number[]): null | T => cborDecode(Uint8Array.from(bytes));
+export const decodeData = <T>(bytes: number[]): null | T => cborDecode(new Uint8Array(bytes));
 export const encode = (packet: WsIoPacket) => cborEncode(WsIoPacket.toInner(packet));
 export const encodeData = (data: any) => cborEncode(data);
 
