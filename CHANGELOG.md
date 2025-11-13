@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.5
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.4...v0.2.5)
+
+### 🩹 Fixes
+
+- Ensure events map type is correctly passed into `WsIoClient` ([b1259cb](https://github.com/ws-io/ws.io-ts-client/commit/b1259cb))
+
+### 🏡 Chore
+
+- Rename `msgPack` to `msgpack` ([91ee6a2](https://github.com/ws-io/ws.io-ts-client/commit/91ee6a2))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.2.4
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.3...v0.2.4)
