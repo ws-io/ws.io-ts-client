@@ -10,11 +10,10 @@
 
 ### 🏡 Chore
 
-- Change `??=` to ` ([](https://github.com/ws-io/ws.io-ts-client/commit/))
+- Change `??=` to `||=` ([34afd8e](https://github.com/ws-io/ws.io-ts-client/commit/34afd8e))
 
 ### ❤️ Contributors
 
-- =`
 - Kiki-kanri
 
 ## v0.2.2
