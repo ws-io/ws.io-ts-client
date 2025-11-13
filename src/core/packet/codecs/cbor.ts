@@ -5,13 +5,11 @@ import {
 } from 'cbor-x';
 
 import { WsIoPacket } from '../';
+import { isBrowser } from '../../../constants';
 
-if (
-    !isNativeAccelerationEnabled
-    && typeof document !== 'undefined'
-    && typeof globalThis.window === 'object'
-    && typeof window !== 'undefined'
-) console.warn('Native acceleration not enabled for cbor-x, verify that install finished properly');
+if (!isNativeAccelerationEnabled && !isBrowser) {
+    console.warn('Native acceleration not enabled for cbor-x, verify that install finished properly');
+}
 
 export const decodeData = <T>(bytes: number[]): null | T => cborDecode(Uint8Array.from(bytes));
 export const encode = (packet: WsIoPacket) => cborEncode(WsIoPacket.toInner(packet));
