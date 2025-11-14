@@ -1,7 +1,7 @@
 {
   "name": "ws.io-client",
   "type": "module",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "",
   "author": "kiki-kanri",
   "license": "MIT",
@@ -121,7 +121,7 @@
     "@kikiutils/eslint-config": "^5.0.0",
     "@kikiutils/tsconfigs": "^5.0.5",
     "@types/node": "^24.10.1",
-    "@vitest/coverage-v8": "^4.0.8",
+    "@vitest/coverage-v8": "^4.0.9",
     "cbor-x": "^1.6.0",
     "changelogen": "^0.6.2",
     "depcheck": "^1.4.7",
@@ -131,7 +131,7 @@
     "tsdown": "^0.16.4",
     "typescript": "^5.9.3",
     "unplugin-unused": "^0.5.6",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.9"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
