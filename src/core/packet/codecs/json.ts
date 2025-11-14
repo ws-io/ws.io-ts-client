@@ -1,13 +1,13 @@
 import { WsIoPacket } from '../';
 
-export const encode = (packet: WsIoPacket) => JSON.stringify(WsIoPacket.toInner(packet));
-export const encodeData = (data: any) => Array.from(new TextEncoder().encode(JSON.stringify(data)));
+import type { WsIoPacketCodec } from './';
 
-export function decode(data: ArrayBuffer | string) {
-    if (typeof data !== 'string') throw new Error('Invalid packet format: expected string data');
-    return WsIoPacket.fromInner(JSON.parse(data));
-}
-
-export function decodeData<T>(bytes: number[]): null | T {
-    return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
-}
+export const wsIoPacketJsonCodec: WsIoPacketCodec = Object.freeze({
+    decode(data: ArrayBuffer | string) {
+        if (typeof data !== 'string') throw new Error('Invalid packet format: expected string data');
+        return WsIoPacket.fromInner(JSON.parse(data));
+    },
+    decodeData: <T>(bytes: number[]): null | T => JSON.parse(new TextDecoder().decode(new Uint8Array(bytes))),
+    encode: (packet: WsIoPacket) => JSON.stringify(WsIoPacket.toInner(packet)),
+    encodeData: (data: any) => Array.from(new TextEncoder().encode(JSON.stringify(data))),
+});

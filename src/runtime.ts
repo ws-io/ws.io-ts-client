@@ -4,7 +4,7 @@ import type { ReadonlyDeep } from 'type-fest';
 
 import { AtomicStatus } from './core/atomic/status';
 import { WsIoPacket } from './core/packet';
-import * as wsIoPacketJsonCodec from './core/packet/codecs/json';
+import { wsIoPacketJsonCodec } from './core/packet/codecs/json';
 import { WsIoClientSession } from './session';
 import type { WsIoClientConfig } from './types/config';
 import { sleep } from './utils';
@@ -44,7 +44,7 @@ export class WsIoClientRuntime {
             throw new Error(`Invalid URL scheme: ${url.protocol.slice(0, -1)}`);
         }
 
-        this._config = defu(
+        this._config = defu<WsIoClientConfig, WsIoClientConfig[]>(
             config,
             {
                 initHandlerTimeout: 3 * 1000,

@@ -7,15 +7,18 @@ import {
 import { WsIoPacket } from '../';
 import { isBrowser } from '../../../constants';
 
+import type { WsIoPacketCodec } from './';
+
 if (!isNativeAccelerationEnabled && !isBrowser) {
     console.warn('Native acceleration not enabled for msgpackr, verify that install finished properly');
 }
 
-export const decodeData = <T>(bytes: number[]): null | T => msgpackDecode(new Uint8Array(bytes));
-export const encode = (packet: WsIoPacket) => msgpackEncode(WsIoPacket.toInner(packet));
-export const encodeData = (data: any) => msgpackEncode(data);
-
-export function decode(data: ArrayBuffer | string) {
-    if (typeof data === 'string') throw new Error('Invalid packet format: expected ArrayBuffer data');
-    return WsIoPacket.fromInner(msgpackDecode(new Uint8Array(data)));
-}
+export const wsIoPacketMsgpackCodec: WsIoPacketCodec = Object.freeze({
+    decode(data: ArrayBuffer | string) {
+        if (typeof data === 'string') throw new Error('Invalid packet format: expected ArrayBuffer data');
+        return WsIoPacket.fromInner(msgpackDecode(new Uint8Array(data)));
+    },
+    decodeData: <T>(bytes: number[]): null | T => msgpackDecode(new Uint8Array(bytes)),
+    encode: (packet: WsIoPacket) => msgpackEncode(WsIoPacket.toInner(packet)),
+    encodeData: (data: any) => msgpackEncode(data),
+});
