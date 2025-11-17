@@ -5,7 +5,13 @@
 [![codecov][codecov-src]][codecov-href]
 [![License][license-src]][license-href]
 
-Description
+A pure WebSocket framework inspired by socket.io, also supporting custom events, automatic reconnection, event buffering, and other features.
+
+Primarily designed for use with [ws.io-rs](https://github.com/ws-io/ws.io-rs). If both your server and client are built with Node.js or Bun, we recommend sticking with the more mature socket.io.
+
+Since development is not yet complete, documentation is currently unavailable. However, you may refer to the results from [Zread](https://zread.ai/ws-io/ws.io-ts-client) or [DeepWiki](https://deepwiki.com/ws-io/ws.io-ts-client).
+
+Please note that Zread and DeepWiki results may not be accurate.
 
 - [✨ Release Notes](./CHANGELOG.md)
 
