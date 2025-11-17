@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.3.1
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.0...v0.3.1)
+
+### 📖 Documentation
+
+- Update README ([830b32d](https://github.com/ws-io/ws.io-ts-client/commit/830b32d))
+
+### 🏡 Chore
+
+- Mark immutable class properties as readonly ([321f9cc](https://github.com/ws-io/ws.io-ts-client/commit/321f9cc))
+- Unify and organize all default timeout durations ([81ad8aa](https://github.com/ws-io/ws.io-ts-client/commit/81ad8aa))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.0
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.2.9...v0.3.0)
