@@ -4,8 +4,8 @@ import Queue from 'yocto-queue';
 export class AsyncQueue<T> {
     // Private properties
     #closed = false;
-    #queue = new Queue<T>();
-    #resolvers = new Queue<((value: Promisable<null | T>) => void)>();
+    readonly #queue = new Queue<T>();
+    readonly #resolvers = new Queue<((value: Promisable<null | T>) => void)>();
 
     // Symbols
     async* [Symbol.asyncIterator]() {

@@ -12,7 +12,7 @@ export class WsIoClient<
     ToServerEvents extends EventsMap = DefaultEventsMap,
     ToClientEvents extends EventsMap = DefaultEventsMap,
 > {
-    #runtime: WsIoClientRuntime;
+    readonly #runtime: WsIoClientRuntime;
 
     constructor(url: string | URL, config?: Partial<WsIoClientConfig>) {
         this.#runtime = new WsIoClientRuntime(this, url, config);

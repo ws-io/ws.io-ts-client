@@ -23,19 +23,19 @@ enum RuntimeStatus {
 export class WsIoClientRuntime {
     // Private properties
     #connectionLoopPromise?: Promise<void>;
-    #connectUrl: URL;
+    readonly #connectUrl: URL;
     #nextEventHandlerId = 0;
-    #operateLock = new Mutex();
+    readonly #operateLock = new Mutex();
     #sendEventDataPromise?: Promise<void>;
-    #sendEventDataQueue = new AsyncQueue<ArrayBufferView | string>();
+    readonly #sendEventDataQueue = new AsyncQueue<ArrayBufferView | string>();
     #session?: WsIoClientSession;
-    #status = new AtomicStatus(RuntimeStatus.Stopped);
+    readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
     #wakeReconnectWaitAbortController?: AbortController;
 
     // Internal properties
-    _client: WsIoClient;
-    _config: ReadonlyDeep<WsIoClientConfig>;
-    _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
+    readonly _client: WsIoClient;
+    readonly _config: ReadonlyDeep<WsIoClientConfig>;
+    readonly _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
     _wakeSendEventDataPromise?: () => void;
 
     constructor(client: WsIoClient, url: string | URL, config?: Partial<WsIoClientConfig>) {

@@ -25,12 +25,12 @@ export class WsIoClientSession {
     #initTimeoutTimeout?: NodeJS.Timeout;
     #pingIntervalTimer?: NodeJS.Timeout;
     #readyTimeoutTimeout?: NodeJS.Timeout;
-    #runtime: WsIoClientRuntime;
-    #status = new AtomicStatus(SessionStatus.Created);
-    #ws: WebSocket;
+    readonly #runtime: WsIoClientRuntime;
+    readonly #status = new AtomicStatus(SessionStatus.Created);
+    readonly #ws: WebSocket;
 
     // Internal properties
-    _waitForClose: Promise<CloseEvent>;
+    readonly _waitForClose: Promise<CloseEvent>;
 
     constructor(runtime: WsIoClientRuntime, ws: WebSocket) {
         this.#runtime = runtime;
