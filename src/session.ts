@@ -45,6 +45,18 @@ export class WsIoClientSession {
                 },
                 this.#runtime._config.initPacketTimeout,
             );
+
+            // Create ping interval timer to send 1-byte heartbeat frame to keep the connection alive
+            this.#pingIntervalTimer = setInterval(
+                () => {
+                    try {
+                        this.#ws.send(new Uint8Array([0x01]));
+                    } catch {
+                        this._close();
+                    }
+                },
+                this.#runtime._config.pingInterval,
+            );
         };
     }
 
@@ -127,18 +139,6 @@ export class WsIoClientSession {
 
         // Clear ready-timeout task
         if (this.#readyTimeoutTimeout) clearTimeout(this.#readyTimeoutTimeout);
-
-        // Create ping interval timer to send 1-byte heartbeat frame to keep the connection alive
-        this.#pingIntervalTimer = setInterval(
-            () => {
-                try {
-                    this.#ws.send(new Uint8Array([0x01]));
-                } catch {
-                    this._close();
-                }
-            },
-            this.#runtime._config.pingInterval,
-        );
 
         // Wake send event data promise
         this.#runtime._wakeSendEventDataPromise?.();
