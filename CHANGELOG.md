@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.2
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.1...v0.3.2)
+
+### 💅 Refactors
+
+- Move ping-interval timer initialization into `ws.onopen` ([2d9935d](https://github.com/ws-io/ws.io-ts-client/commit/2d9935d))
+
+### 🏡 Chore
+
+- Update deps ([1143ad4](https://github.com/ws-io/ws.io-ts-client/commit/1143ad4))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.1
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.0...v0.3.1)
