@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.4
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.3...v0.3.4)
+
+### 🩹 Fixes
+
+- Correct misplaced `cancelled` getter ([95a5123](https://github.com/ws-io/ws.io-ts-client/commit/95a5123))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.3
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.2...v0.3.3)
