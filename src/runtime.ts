@@ -22,6 +22,7 @@ enum RuntimeStatus {
 // Classes
 export class WsIoClientRuntime {
     // Private properties
+    #cancel?: () => void;
     #connectionLoopPromise?: Promise<void>;
     readonly #connectUrl: URL;
     #nextEventHandlerId = 0;
@@ -33,6 +34,7 @@ export class WsIoClientRuntime {
     #wakeReconnectWaitAbortController?: AbortController;
 
     // Internal properties
+    _cancelled?: Promise<void>;
     readonly _client: WsIoClient;
     readonly _config: ReadonlyDeep<WsIoClientConfig>;
     readonly _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
@@ -66,13 +68,22 @@ export class WsIoClientRuntime {
 
     // Private methods
     async #runConnection() {
+        // Connect to server
         const ws = new WebSocket(this.#connectUrl);
         ws.binaryType = 'arraybuffer';
 
+        // Create session
         const session = new WsIoClientSession(this, ws);
         this.#session = session;
 
-        await this.#session._waitForClose;
+        await Promise.race([
+            (async () => {
+                await this._cancelled;
+                session._close();
+            })(),
+            this.#session._waitForClose,
+        ]);
+
         this.#session = undefined;
         await session._cleanup();
     }
@@ -88,6 +99,9 @@ export class WsIoClientRuntime {
                     break;
                 default: throw new Error('unreachable');
             }
+
+            // Create new cancel token
+            this._cancelled = new Promise<void>((resolve) => void (this.#cancel = resolve));
 
             // Create connection loop promise
             this.#connectionLoopPromise = (async () => {
@@ -127,16 +141,13 @@ export class WsIoClientRuntime {
                 default: throw new Error('unreachable');
             }
 
-            // Close session
-            this.#session?._close();
+            // Cancel token to abort all waiting operations
+            this.#cancel?.();
 
             // Close send event data queue and await send event data promise termination
             this.#sendEventDataQueue.closeAndClear();
             this._wakeSendEventDataPromise?.();
             await this.#sendEventDataPromise;
-
-            // Cancel all ongoing operations via cancel token and store a new one
-            // TODO?
 
             // Wake reconnect loop to break out of sleep early
             this.#wakeReconnectWaitAbortController?.abort();
