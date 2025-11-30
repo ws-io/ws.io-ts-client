@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.3
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.2...v0.3.3)
+
+### 🚀 Enhancements
+
+- Add `cancelled` support to runtime; create token on `connect`, trigger on `disconnect`, and await `cancelled` in `runConnection` to prevent deadlocks from unexpected errors ([d4bb9ad](https://github.com/ws-io/ws.io-ts-client/commit/d4bb9ad))
+
+### 🏡 Chore
+
+- Upgrade deps ([b739e96](https://github.com/ws-io/ws.io-ts-client/commit/b739e96))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.2
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.1...v0.3.2)
