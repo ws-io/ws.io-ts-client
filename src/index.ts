@@ -52,4 +52,9 @@ export class WsIoClient<
         if (typeof event !== 'string') throw new Error('Event must be a string');
         this.#runtime._offByHandlerId(event, handlerId);
     }
+
+    // Public getters
+    get cancelled() {
+        return this.#runtime._cancelled;
+    }
 }

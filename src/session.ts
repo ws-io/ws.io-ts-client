@@ -194,10 +194,6 @@ export class WsIoClientSession {
     }
 
     // Public getters
-    get cancelled() {
-        return this.#runtime._cancelled;
-    }
-
     get client() {
         return this.#runtime._client;
     }
