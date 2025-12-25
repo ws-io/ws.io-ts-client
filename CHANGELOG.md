@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.5
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.4...v0.3.5)
+
+### 🏡 Chore
+
+- Upgrade deps ([545d7f6](https://github.com/ws-io/ws.io-ts-client/commit/545d7f6))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.4
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.3...v0.3.4)
