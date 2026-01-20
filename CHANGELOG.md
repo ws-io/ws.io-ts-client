@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.7
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.6...v0.3.7)
+
+### 🩹 Fixes
+
+- Adjust `customExports` order in `tsdown.config` to move wildcard (`*`) exports to the end ([0b3f357](https://github.com/ws-io/ws.io-ts-client/commit/0b3f357))
+
+### 🏡 Chore
+
+- Update deps ([8554fa4](https://github.com/ws-io/ws.io-ts-client/commit/8554fa4))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.6
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.5...v0.3.6)
