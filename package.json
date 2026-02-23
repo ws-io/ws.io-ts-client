@@ -98,7 +98,7 @@
   },
   "peerDependencies": {
     "cbor-x": "^1.6.0",
-    "msgpackr": "^1.11.5"
+    "msgpackr": "^1.11.8"
   },
   "peerDependenciesMeta": {
     "cbor-x": {
@@ -111,25 +111,25 @@
   "dependencies": {
     "defu": "^6.1.4",
     "p-mutex": "^1.0.0",
-    "type-fest": "^5.4.1",
+    "type-fest": "^5.4.4",
     "yocto-queue": "^1.2.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^7.0.1",
-    "@kikiutils/eslint-config": "^5.0.2",
+    "@antfu/eslint-config": "^7.4.3",
+    "@kikiutils/eslint-config": "^5.0.4",
     "@kikiutils/tsconfigs": "^5.0.5",
-    "@types/node": "^25.0.9",
-    "@vitest/coverage-v8": "^4.0.17",
+    "@types/node": "^25.3.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "cbor-x": "^1.6.0",
     "changelogen": "^0.6.2",
     "depcheck": "^1.4.7",
     "msgpackr": "^1.11.8",
-    "publint": "^0.3.16",
+    "publint": "^0.3.17",
     "ts-unused-exports": "^11.0.1",
-    "tsdown": "^0.19.0",
+    "tsdown": "^0.20.3",
     "typescript": "^5.9.3",
-    "unplugin-unused": "^0.5.6",
-    "vitest": "^4.0.17"
+    "unplugin-unused": "^0.5.7",
+    "vitest": "^4.0.18"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
