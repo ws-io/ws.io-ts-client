@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.3.9
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.8...v0.3.9)
+
+### 🩹 Fixes
+
+- Resolve type errors ([6c3658a](https://github.com/ws-io/ws.io-ts-client/commit/6c3658a))
+
+### 🏡 Chore
+
+- Update vscode settings ([7b2f6f9](https://github.com/ws-io/ws.io-ts-client/commit/7b2f6f9))
+- Update eslint config ([77a5f00](https://github.com/ws-io/ws.io-ts-client/commit/77a5f00))
+- Update deps, tsdown config and package scripts ([5ada952](https://github.com/ws-io/ws.io-ts-client/commit/5ada952))
+- Update deps and configs ([6082b0e](https://github.com/ws-io/ws.io-ts-client/commit/6082b0e))
+- Rename `waitWithTimeout` fn `promise` param to `promisable` ([f8fc160](https://github.com/ws-io/ws.io-ts-client/commit/f8fc160))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.8
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.7...v0.3.8)
