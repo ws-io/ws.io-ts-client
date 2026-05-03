@@ -187,7 +187,7 @@ export class WsIoClientSession {
         this.#ws.close();
     }
 
-    _emit_event_data(data: ArrayBufferView | string) {
+    _emit_event_data(data: ArrayBufferView<ArrayBuffer> | string) {
         this.#status.ensure(SessionStatus.Ready, (status) => `Cannot emit event data in invalid status: ${status}`);
         this.#ws.send(data);
         return true;

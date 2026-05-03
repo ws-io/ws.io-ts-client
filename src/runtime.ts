@@ -28,7 +28,7 @@ export class WsIoClientRuntime {
     #nextEventHandlerId = 0;
     readonly #operateLock = new Mutex();
     #sendEventDataPromise?: Promise<void>;
-    readonly #sendEventDataQueue = new AsyncQueue<ArrayBufferView | string>();
+    readonly #sendEventDataQueue = new AsyncQueue<ArrayBufferView<ArrayBuffer> | string>();
     #session?: WsIoClientSession;
     readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
     #wakeReconnectWaitAbortController?: AbortController;

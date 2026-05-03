@@ -19,6 +19,6 @@ export const wsIoPacketCborCodec: WsIoPacketCodec = Object.freeze({
         return WsIoPacket.fromInner(cborDecode(new Uint8Array(data)));
     },
     decodeData: <T>(bytes: number[]): null | T => cborDecode(new Uint8Array(bytes)),
-    encode: (packet: WsIoPacket) => cborEncode(WsIoPacket.toInner(packet)),
-    encodeData: (data: any) => cborEncode(data),
+    encode: (packet: WsIoPacket) => cborEncode(WsIoPacket.toInner(packet)) as ArrayBufferView<ArrayBuffer>,
+    encodeData: (data: any) => cborEncode(data) as ArrayBufferView<ArrayBuffer>,
 });

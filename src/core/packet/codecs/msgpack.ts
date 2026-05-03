@@ -19,6 +19,6 @@ export const wsIoPacketMsgpackCodec: WsIoPacketCodec = Object.freeze({
         return WsIoPacket.fromInner(msgpackDecode(new Uint8Array(data)));
     },
     decodeData: <T>(bytes: number[]): null | T => msgpackDecode(new Uint8Array(bytes)),
-    encode: (packet: WsIoPacket) => msgpackEncode(WsIoPacket.toInner(packet)),
-    encodeData: (data: any) => msgpackEncode(data),
+    encode: (packet: WsIoPacket) => msgpackEncode(WsIoPacket.toInner(packet)) as ArrayBufferView<ArrayBuffer>,
+    encodeData: (data: any) => msgpackEncode(data) as ArrayBufferView<ArrayBuffer>,
 });
