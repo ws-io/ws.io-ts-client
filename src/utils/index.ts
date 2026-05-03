@@ -15,11 +15,11 @@ export function sleep(ms: number, signal?: AbortSignal) {
     });
 }
 
-export function waitWithTimeout<T>(timeoutMs: number, promise?: Promisable<T>): Promise<T | undefined> {
-    if (!promise) return Promise.resolve(undefined);
+export function waitWithTimeout<T>(timeoutMs: number, promisable?: Promisable<T>): Promise<T | undefined> {
+    if (!promisable) return Promise.resolve(undefined);
     return new Promise<T>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
-        (promise instanceof Promise ? promise : Promise.resolve(promise))
+        (promisable instanceof Promise ? promisable : Promise.resolve(promisable))
             .then(resolve)
             .catch(reject)
             .finally(() => clearTimeout(timeout));
