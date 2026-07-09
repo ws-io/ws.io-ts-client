@@ -1,0 +1,6 @@
+allowBuilds:
+  cbor-extract: true
+  msgpackr-extract: true
+
+shellEmulator: true
+trustPolicy: no-downgrade
