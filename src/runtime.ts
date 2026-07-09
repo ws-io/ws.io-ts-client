@@ -123,7 +123,29 @@ export class WsIoClientRuntime {
                         try {
                             if (this.#session?._emit_event_data(data)) break;
                         } catch {}
-                        await new Promise<void>((resolve) => void (this._wakeSendEventDataPromise = resolve));
+
+                        let emitted = false;
+                        await new Promise<void>((resolve) => {
+                            const wake = () => {
+                                if (this._wakeSendEventDataPromise === wake) this._wakeSendEventDataPromise = undefined;
+                                resolve();
+                            };
+
+                            this._wakeSendEventDataPromise = wake;
+
+                            try {
+                                if (this.#session?._emit_event_data(data)) {
+                                    emitted = true;
+                                    wake();
+                                }
+                            } catch {}
+                        });
+
+                        if (
+                            emitted
+                            || !this.#status.is(RuntimeStatus.Running)
+                            || this.#sendEventDataQueue.closed
+                        ) break;
                     }
                 }
             })();
