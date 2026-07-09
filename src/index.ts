@@ -14,7 +14,7 @@ export class WsIoClient<
 > {
     readonly #runtime: WsIoClientRuntime;
 
-    constructor(url: string | URL, config?: Partial<WsIoClientConfig>) {
+    constructor(url: string | URL, config?: WsIoClientConfig) {
         this.#runtime = new WsIoClientRuntime(this, url, config);
     }
 
@@ -56,5 +56,9 @@ export class WsIoClient<
     // Public getters
     get cancelled() {
         return this.#runtime._cancelled;
+    }
+
+    get isSessionReady() {
+        return this.#runtime._isSessionReady;
     }
 }

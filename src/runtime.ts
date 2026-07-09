@@ -1,13 +1,18 @@
 import { defu } from 'defu';
 import Mutex from 'p-mutex';
-import type { ReadonlyDeep } from 'type-fest';
 
 import { AtomicStatus } from './core/atomic/status';
 import { WsIoPacket } from './core/packet';
 import { wsIoPacketJsonCodec } from './core/packet/codecs/json';
 import { WsIoClientSession } from './session';
-import type { WsIoClientConfig } from './types/config';
-import { sleep } from './utils';
+import type {
+    ResolvedWsIoClientConfig,
+    WsIoClientConfig,
+} from './types/config';
+import {
+    sleep,
+    waitWithTimeout,
+} from './utils';
 import { AsyncQueue } from './utils/queue';
 
 import type { WsIoClient } from './';
@@ -36,19 +41,21 @@ export class WsIoClientRuntime {
     // Internal properties
     _cancelled?: Promise<void>;
     readonly _client: WsIoClient;
-    readonly _config: ReadonlyDeep<WsIoClientConfig>;
+    readonly _config: Readonly<ResolvedWsIoClientConfig>;
     readonly _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
     _wakeSendEventDataPromise?: () => void;
 
-    constructor(client: WsIoClient, url: string | URL, config?: Partial<WsIoClientConfig>) {
+    constructor(client: WsIoClient, url: string | URL, config?: WsIoClientConfig) {
         if (typeof url === 'string') url = new URL(url);
         if (url.protocol !== 'ws:' && url.protocol !== 'wss:') {
             throw new Error(`Invalid URL scheme: ${url.protocol.slice(0, -1)}`);
         }
 
-        this._config = defu<WsIoClientConfig, WsIoClientConfig[]>(
+        this._config = defu(
             config,
             {
+                connectTimeout: 10 * 1000,
+                disconnectTimeout: 5 * 1000,
                 initHandlerTimeout: 3 * 1000,
                 initPacketTimeout: 5 * 1000,
                 onSessionCloseHandlerTimeout: 2 * 1000,
@@ -57,7 +64,7 @@ export class WsIoClientRuntime {
                 readyPacketTimeout: 5 * 1000,
                 reconnectDelay: 1 * 1000,
                 requestPath: '/ws.io',
-            },
+            } satisfies ResolvedWsIoClientConfig,
         );
 
         url.searchParams.set('namespace', url.pathname.replaceAll(/\/+/g, '/'));
@@ -67,6 +74,11 @@ export class WsIoClientRuntime {
     }
 
     // Private methods
+    async #closeSessionAndWait(session: WsIoClientSession) {
+        session._close();
+        await waitWithTimeout(this._config.disconnectTimeout, session._waitForClose).catch(() => {});
+    }
+
     async #runConnection() {
         // Connect to server
         const ws = new WebSocket(this.#connectUrl);
@@ -76,16 +88,36 @@ export class WsIoClientRuntime {
         const session = new WsIoClientSession(this, ws);
         this.#session = session;
 
-        await Promise.race([
-            (async () => {
-                await this._cancelled;
-                session._close();
-            })(),
-            this.#session._waitForClose,
-        ]);
+        const connectTimeoutAbortController = new AbortController();
+        try {
+            await Promise.race([
+                (async () => {
+                    await this._cancelled;
+                    await this.#closeSessionAndWait(session);
+                })(),
+                (async () => {
+                    await sleep(this._config.connectTimeout, connectTimeoutAbortController.signal);
+                    if (connectTimeoutAbortController.signal.aborted) return;
 
-        this.#session = undefined;
-        await session._cleanup();
+                    if (session._isCreated) {
+                        await this.#closeSessionAndWait(session);
+                        return;
+                    }
+
+                    await session._waitForClose;
+                })(),
+                this.#session._waitForClose,
+            ]);
+        } finally {
+            connectTimeoutAbortController.abort();
+            this.#session = undefined;
+            await session._cleanup();
+        }
+    }
+
+    // Internal getters
+    get _isSessionReady() {
+        return this.#session?.isReady ?? false;
     }
 
     // Internal methods
@@ -174,10 +206,12 @@ export class WsIoClientRuntime {
             // Wake reconnect loop to break out of sleep early
             this.#wakeReconnectWaitAbortController?.abort();
 
-            // Await connection loop promise termination
-            await this.#connectionLoopPromise;
-
-            this.#status.store(RuntimeStatus.Stopped);
+            try {
+                // Await connection loop promise termination
+                await this.#connectionLoopPromise;
+            } finally {
+                this.#status.store(RuntimeStatus.Stopped);
+            }
         });
     }
 

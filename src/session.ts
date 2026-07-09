@@ -25,19 +25,29 @@ export class WsIoClientSession {
     #initTimeoutTimeout?: NodeJS.Timeout;
     #pingIntervalTimer?: NodeJS.Timeout;
     #readyTimeoutTimeout?: NodeJS.Timeout;
+    #resolveClose?: (event?: CloseEvent) => void;
     readonly #runtime: WsIoClientRuntime;
     readonly #status = new AtomicStatus(SessionStatus.Created);
     readonly #ws: WebSocket;
 
     // Internal properties
-    readonly _waitForClose: Promise<CloseEvent>;
+    readonly _waitForClose: Promise<CloseEvent | undefined>;
 
     constructor(runtime: WsIoClientRuntime, ws: WebSocket) {
         this.#runtime = runtime;
         this.#ws = ws;
-        this._waitForClose = new Promise((resolve) => void (ws.onclose = resolve));
-        ws.onmessage = (event) => this.#handleIncomingPacket(event.data);
+        this._waitForClose = new Promise((resolve) => {
+            this.#resolveClose = resolve;
+            ws.onclose = (event) => this.#finishClose(event);
+        });
+
+        ws.onmessage = (event) => this.#handleIncomingPacket(event.data).catch(() => this._close());
         ws.onopen = () => {
+            if (!this.#status.is(SessionStatus.Created)) {
+                this.#closeWebSocket();
+                return;
+            }
+
             this.#status.store(SessionStatus.AwaitingInit);
             this.#initTimeoutTimeout = setTimeout(
                 () => {
@@ -61,6 +71,22 @@ export class WsIoClientSession {
     }
 
     // Private methods
+    #closeWebSocket() {
+        try {
+            this.#ws.close();
+        } catch {
+            this.#finishClose();
+        }
+    }
+
+    #finishClose(event?: CloseEvent) {
+        this.#ws.onclose = null;
+        this.#ws.onmessage = null;
+        this.#ws.onopen = null;
+        this.#resolveClose?.(event);
+        this.#resolveClose = undefined;
+    }
+
     #handleDisconnectPacket() {
         this.#runtime._disconnect().catch(() => {});
     }
@@ -69,7 +95,7 @@ export class WsIoClientSession {
         const handlers = this.#runtime._eventHandlers[event];
         if (!handlers) return;
         const data = packetData ? this.#runtime._config.packetCodec.decodeData<any[]>(packetData) || [] : [];
-        for (const handler of handlers.values()) handler(...data);
+        for (const handler of handlers.values()) Promise.resolve().then(() => handler(...data)).catch(() => {});
     }
 
     async #handleIncomingPacket(data: ArrayBuffer | string) {
@@ -151,6 +177,11 @@ export class WsIoClientSession {
         this.#ws.send(this.#runtime._config.packetCodec.encode(packet));
     }
 
+    // Internal getters
+    get _isCreated() {
+        return this.#status.is(SessionStatus.Created);
+    }
+
     // Internal methods
     async _cleanup() {
         // Set state to Closing
@@ -164,14 +195,18 @@ export class WsIoClientSession {
         // Cancel all ongoing operations via cancel token
         // TODO?
 
-        // Invoke onSessionCloseHandler with timeout protection if configured
-        await waitWithTimeout(
-            this.#runtime._config.onSessionCloseHandlerTimeout,
-            this.#runtime._config.onSessionCloseHandler?.(this),
-        );
-
-        // Set state to Closed
-        this.#status.store(SessionStatus.Closed);
+        try {
+            // Invoke onSessionCloseHandler with timeout protection if configured
+            await waitWithTimeout(
+                this.#runtime._config.onSessionCloseHandlerTimeout,
+                this.#runtime._config.onSessionCloseHandler?.(this),
+            );
+        } catch {
+            // Ignore cleanup hook failures so runtime shutdown/reconnect can make progress.
+        } finally {
+            // Set state to Closed
+            this.#status.store(SessionStatus.Closed);
+        }
     }
 
     _close() {
@@ -184,7 +219,7 @@ export class WsIoClientSession {
         }
 
         // Send websocket close frame to initiate graceful shutdown
-        this.#ws.close();
+        this.#closeWebSocket();
     }
 
     _emit_event_data(data: ArrayBufferView<ArrayBuffer> | string) {
