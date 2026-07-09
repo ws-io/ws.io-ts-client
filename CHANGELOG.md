@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.3.10
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.9...v0.3.10)
+
+### 🚀 Enhancements
+
+- Add client timeout controls ([86d5c04](https://github.com/ws-io/ws.io-ts-client/commit/86d5c04))
+
+### 🩹 Fixes
+
+- Prevent buffered emit missed wakeup ([a7c59d4](https://github.com/ws-io/ws.io-ts-client/commit/a7c59d4))
+
+### 🏡 Chore
+
+- Add `.gitattributes` ([4645112](https://github.com/ws-io/ws.io-ts-client/commit/4645112))
+- Add `.omx/` to `.gitignore` ([a9a8cfa](https://github.com/ws-io/ws.io-ts-client/commit/a9a8cfa))
+- Update scripts ([723523c](https://github.com/ws-io/ws.io-ts-client/commit/723523c))
+- Upgrade deps ([1b452b4](https://github.com/ws-io/ws.io-ts-client/commit/1b452b4))
+- Upgrade deps ([bf43b64](https://github.com/ws-io/ws.io-ts-client/commit/bf43b64))
+
+### 🤖 CI
+
+- Update node versions ([8f4edfd](https://github.com/ws-io/ws.io-ts-client/commit/8f4edfd))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.9
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.8...v0.3.9)
