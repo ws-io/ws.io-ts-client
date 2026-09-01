@@ -40,7 +40,7 @@ export class WsIoPacket {
             throw new Error(`Invalid packet key: ${innerPacket[1]}`);
         }
 
-        if (innerPacket[2] !== null && !Array.isArray(innerPacket[2])) {
+        if (innerPacket[2] !== null && !Array.isArray(innerPacket[2]) && !ArrayBuffer.isView(innerPacket[2])) {
             throw new Error(`Invalid packet data: ${innerPacket[2]}`);
         }
 
