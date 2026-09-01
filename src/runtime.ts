@@ -3,6 +3,7 @@ import Mutex from 'p-mutex';
 
 import { AtomicStatus } from './core/atomic/status';
 import { WsIoPacket } from './core/packet';
+import type { WsIoEncodedPacketData } from './core/packet/codecs';
 import { wsIoPacketJsonCodec } from './core/packet/codecs/json';
 import { WsIoClientSession } from './session';
 import type {
@@ -33,7 +34,7 @@ export class WsIoClientRuntime {
     #nextEventHandlerId = 0;
     readonly #operateLock = new Mutex();
     #sendEventDataPromise?: Promise<void>;
-    readonly #sendEventDataQueue = new AsyncQueue<ArrayBufferView<ArrayBuffer> | string>();
+    readonly #sendEventDataQueue = new AsyncQueue<WsIoEncodedPacketData>();
     #session?: WsIoClientSession;
     readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
     #wakeReconnectWaitAbortController?: AbortController;

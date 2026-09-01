@@ -10,8 +10,13 @@ import {
     WsIoPacket,
     WsIoPacketType,
 } from '../src/core/packet';
-import type { WsIoEncodedPacketData } from '../src/core/packet/codecs';
+import type {
+    WsIoEncodedPacketData,
+    WsIoPacketCodec,
+} from '../src/core/packet/codecs';
+import { wsIoPacketCborCodec } from '../src/core/packet/codecs/cbor';
 import { wsIoPacketJsonCodec } from '../src/core/packet/codecs/json';
+import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
 import { WsIoClientRuntime } from '../src/runtime';
 
 class FakeRuntimeWebSocket {
@@ -48,10 +53,8 @@ class FakeRuntimeWebSocket {
     }
 }
 
-function decodeSentPackets(ws: FakeRuntimeWebSocket) {
-    return ws.sent
-        .filter((data): data is string => typeof data === 'string')
-        .map((data) => wsIoPacketJsonCodec.decode(data));
+function decodeSentPackets(ws: FakeRuntimeWebSocket, codec: WsIoPacketCodec) {
+    return ws.sent.map((data) => codec.decode(data as WsIoEncodedPacketData));
 }
 
 async function flushMicrotasks() {
@@ -105,11 +108,68 @@ describe('wsIoClientRuntime', () => {
         ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
         await flushMicrotasks();
         ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
-        await waitFor(() => decodeSentPackets(ws).some((packet) => packet.key === 'queued-event'));
+        await waitFor(() => decodeSentPackets(ws, wsIoPacketJsonCodec).some((packet) => packet.key === 'queued-event'));
 
-        const eventPacket = decodeSentPackets(ws).find((packet) => packet.key === 'queued-event');
+        const eventPacket = decodeSentPackets(ws, wsIoPacketJsonCodec).find((packet) => packet.key === 'queued-event');
         expect(eventPacket?.type).toBe(WsIoPacketType.Event);
         expect(wsIoPacketJsonCodec.decodeData(eventPacket!.data!)).toStrictEqual(['payload']);
+
+        await runtime._disconnect();
+    });
+
+    it.each([
+        [
+            'cbor',
+            wsIoPacketCborCodec,
+        ],
+        [
+            'msgpack',
+            wsIoPacketMsgpackCodec,
+        ],
+    ] as const)('roundtrips %s packets through runtime and websocket transport', async (_name, codec) => {
+        vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
+        const eventHandler = vi.fn();
+        const runtime = new WsIoClientRuntime(
+            {} as never,
+            'ws://example.test/app',
+            {
+                initHandler: () => ['client-init'],
+                packetCodec: codec,
+            },
+        );
+
+        runtime._eventHandlers.serverEvent = new Map([
+            [
+                0,
+                eventHandler,
+            ],
+        ]);
+
+        await runtime._connect();
+
+        const ws = FakeRuntimeWebSocket.instances[0]!;
+        ws.emitOpen();
+        ws.emitMessage(codec.encode(WsIoPacket.newInit(codec.encodeData(['server-init']))));
+        await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.type === WsIoPacketType.Init));
+
+        const initResponse = decodeSentPackets(ws, codec).find((packet) => packet.type === WsIoPacketType.Init);
+        expect(codec.decodeData(initResponse!.data!)).toStrictEqual(['client-init']);
+
+        ws.emitMessage(codec.encode({ type: WsIoPacketType.Ready }));
+        await waitFor(() => runtime._isSessionReady);
+
+        ws.emitMessage(codec.encode(
+            WsIoPacket.newEvent('serverEvent', codec.encodeData(['server-payload'])),
+        ));
+
+        await waitFor(() => eventHandler.mock.calls.length === 1);
+        expect(eventHandler).toHaveBeenCalledWith('server-payload');
+
+        runtime._emit('clientEvent', ['client-payload']);
+        await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.key === 'clientEvent'));
+
+        const eventPacket = decodeSentPackets(ws, codec).find((packet) => packet.key === 'clientEvent');
+        expect(codec.decodeData(eventPacket!.data!)).toStrictEqual(['client-payload']);
 
         await runtime._disconnect();
     });

@@ -70,7 +70,7 @@ describe.concurrent('wsIoPacket', () => {
             type: WsIoPacketType.Event,
         });
 
-        expect(wsIoPacketJsonCodec.decodeData(decoded.data as number[])).toStrictEqual([
+        expect(wsIoPacketJsonCodec.decodeData(decoded.data!)).toStrictEqual([
             'payload',
             1,
         ]);
@@ -83,7 +83,7 @@ describe.concurrent('wsIoPacket', () => {
         ]);
 
         const encodedPacket = codec.encode(WsIoPacket.newEvent('event', data));
-        const decoded = codec.decode(encodedPacket as ArrayBufferView<ArrayBuffer>);
+        const decoded = codec.decode(encodedPacket);
 
         expect(decoded).toMatchObject({
             key: 'event',

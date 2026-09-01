@@ -4,8 +4,11 @@ import {
     WsIoPacketType,
 } from './core/packet';
 import type { WsIoPacketData } from './core/packet';
+import type { WsIoEncodedPacketData } from './core/packet/codecs';
 import type { WsIoClientRuntime } from './runtime';
 import { waitWithTimeout } from './utils';
+
+type WsIoWebSocketData = ArrayBuffer | ArrayBufferView<ArrayBuffer> | string;
 
 // Enums
 enum SessionStatus {
@@ -91,21 +94,21 @@ export class WsIoClientSession {
         this.#runtime._disconnect().catch(() => {});
     }
 
-    #handleEventPacket(event: string, packetData?: number[]) {
+    #handleEventPacket(event: string, packetData?: WsIoPacketData) {
         const handlers = this.#runtime._eventHandlers[event];
         if (!handlers) return;
         const data = packetData ? this.#runtime._config.packetCodec.decodeData<any[]>(packetData) || [] : [];
         for (const handler of handlers.values()) Promise.resolve().then(() => handler(...data)).catch(() => {});
     }
 
-    async #handleIncomingPacket(data: ArrayBuffer | string) {
+    async #handleIncomingPacket(data: WsIoEncodedPacketData) {
         const packet = this.#runtime._config.packetCodec.decode(data);
         switch (packet.type) {
             case WsIoPacketType.Disconnect: return this.#handleDisconnectPacket();
             case WsIoPacketType.Event:
                 if (!this.isReady) return;
                 if (!packet.key) throw new Error('Event packet missing key');
-                return this.#handleEventPacket(packet.key, packet.data as number[]);
+                return this.#handleEventPacket(packet.key, packet.data);
             case WsIoPacketType.Init: return await this.#handleInitPacket(packet.data);
             case WsIoPacketType.Ready: return this.#handleReadyPacket();
         }
@@ -126,7 +129,7 @@ export class WsIoClientSession {
 
         // Invoke initHandler with timeout protection if configured
         const decodedPacketData = packetData
-            ? this.#runtime._config.packetCodec.decodeData(packetData as number[])
+            ? this.#runtime._config.packetCodec.decodeData(packetData)
             : undefined;
 
         const responseData = await waitWithTimeout(
@@ -174,7 +177,7 @@ export class WsIoClientSession {
     }
 
     #sendPacket(packet: WsIoPacket) {
-        this.#ws.send(this.#runtime._config.packetCodec.encode(packet));
+        this.#ws.send(toWsIoWebSocketData(this.#runtime._config.packetCodec.encode(packet)));
     }
 
     // Internal getters
@@ -222,9 +225,9 @@ export class WsIoClientSession {
         this.#closeWebSocket();
     }
 
-    _emit_event_data(data: ArrayBufferView<ArrayBuffer> | string) {
+    _emit_event_data(data: WsIoEncodedPacketData) {
         this.#status.ensure(SessionStatus.Ready, (status) => `Cannot emit event data in invalid status: ${status}`);
-        this.#ws.send(data);
+        this.#ws.send(toWsIoWebSocketData(data));
         return true;
     }
 
@@ -236,4 +239,13 @@ export class WsIoClientSession {
     get isReady() {
         return this.#status.is(SessionStatus.Ready);
     }
+}
+
+function toWsIoWebSocketData(data: WsIoEncodedPacketData): WsIoWebSocketData {
+    if (typeof data === 'string' || data instanceof ArrayBuffer) return data;
+    if (data.buffer instanceof ArrayBuffer) {
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    }
+
+    return Uint8Array.from(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
 }
