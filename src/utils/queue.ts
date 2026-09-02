@@ -44,13 +44,4 @@ export class AsyncQueue<T> {
         if (resolver) resolver(value);
         else this.#queue.enqueue(value);
     }
-
-    trySend(value: T) {
-        try {
-            this.send(value);
-            return true;
-        } catch {
-            return false;
-        }
-    }
 }

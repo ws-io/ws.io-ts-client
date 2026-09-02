@@ -20,6 +20,15 @@ describe.concurrent('wsIoClient public guards', () => {
         expect(() => client.offByHandlerId(1, 0)).toThrow('Event must be a string');
     });
 
+    it('rejects empty event names', () => {
+        const client = new WsIoClient('ws://example.test');
+
+        expect(() => client.emit('')).toThrow('Event key cannot be empty');
+        expect(() => client.on('', () => {})).toThrow('Event key cannot be empty');
+        expect(() => client.off('')).toThrow('Event key cannot be empty');
+        expect(() => client.offByHandlerId('', 0)).toThrow('Event key cannot be empty');
+    });
+
     it('does not allow emit before connect starts the runtime', () => {
         const client = new WsIoClient('ws://example.test');
 

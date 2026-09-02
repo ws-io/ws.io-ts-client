@@ -39,10 +39,10 @@ describe.concurrent('asyncQueue', () => {
 
         queue.closeAndClear();
         await expect(pending).resolves.toBeNull();
-        expect(queue.trySend('closed')).toBe(false);
+        expect(() => queue.send('closed')).toThrow('Queue is closed');
 
         queue.reopen();
-        expect(queue.trySend('open')).toBe(true);
+        queue.send('open');
         expect(queue.recv()).toBe('open');
     });
 });

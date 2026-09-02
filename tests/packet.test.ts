@@ -51,6 +51,12 @@ describe.concurrent('wsIoPacket', () => {
 
         expect(() => WsIoPacket.fromInner([
             WsIoPacketType.Event,
+            '',
+            null,
+        ])).toThrow('Event packet missing key');
+
+        expect(() => WsIoPacket.fromInner([
+            WsIoPacketType.Event,
             'event',
             'bad' as never,
         ])).toThrow('Invalid packet data');
@@ -91,5 +97,9 @@ describe.concurrent('wsIoPacket', () => {
             'payload',
             1,
         ]);
+    });
+
+    it('rejects empty event keys when creating event packets', () => {
+        expect(() => WsIoPacket.newEvent('')).toThrow('Event key cannot be empty');
     });
 });

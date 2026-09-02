@@ -40,6 +40,10 @@ export class WsIoPacket {
             throw new Error(`Invalid packet key: ${innerPacket[1]}`);
         }
 
+        if (innerPacket[0] === WsIoPacketType.Event && !innerPacket[1]) {
+            throw new Error('Event packet missing key');
+        }
+
         if (innerPacket[2] !== null && !ArrayBuffer.isView(innerPacket[2])) {
             throw new Error(`Invalid packet data: ${innerPacket[2]}`);
         }
@@ -52,6 +56,7 @@ export class WsIoPacket {
     }
 
     static newEvent(event: string, data?: WsIoPacketData) {
+        if (!event) throw new Error('Event key cannot be empty');
         return this.new(WsIoPacketType.Event, event, data);
     }
 

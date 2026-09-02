@@ -40,7 +40,7 @@ export class WsIoClient<
         event: E,
         ...params: E extends keyof ToServerEvents ? Parameters<ToServerEvents[E]> : unknown[]
     ) {
-        if (typeof event !== 'string') throw new Error('Event must be a string');
+        assertEventKey(event);
         this.#runtime._emit(event, params.length ? params : undefined);
     }
 
@@ -48,17 +48,23 @@ export class WsIoClient<
         event: E,
         callback: E extends keyof ToClientEvents ? ToClientEvents[E] : (...args: any) => Promisable<any>,
     ) {
-        if (typeof event !== 'string') throw new Error('Event must be a string');
+        assertEventKey(event);
         return this.#runtime._on(event, callback);
     }
 
     off(event: keyof ToClientEvents | (string & {})) {
-        if (typeof event !== 'string') throw new Error('Event must be a string');
+        assertEventKey(event);
         this.#runtime._off(event);
     }
 
     offByHandlerId(event: keyof ToClientEvents | (string & {}), handlerId: number) {
-        if (typeof event !== 'string') throw new Error('Event must be a string');
+        assertEventKey(event);
         this.#runtime._offByHandlerId(event, handlerId);
     }
+}
+
+// Functions
+function assertEventKey(event: unknown): asserts event is string {
+    if (typeof event !== 'string') throw new Error('Event must be a string');
+    if (!event) throw new Error('Event key cannot be empty');
 }

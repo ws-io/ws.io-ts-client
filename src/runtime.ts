@@ -226,6 +226,7 @@ export class WsIoClientRuntime {
     }
 
     _on(event: string, callback: (...args: any[]) => any) {
+        if (!event) throw new Error('Event key cannot be empty');
         const handlers = this._eventHandlers[event] ||= new Map();
         const nextEventHandlerId = this.#nextEventHandlerId++;
         handlers.set(nextEventHandlerId, callback);

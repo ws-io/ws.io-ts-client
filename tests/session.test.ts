@@ -138,6 +138,28 @@ describe.concurrent('wsIoClientSession', () => {
         await session._cleanup();
     });
 
+    it('closes the transport when receiving an event with an empty key', async () => {
+        const { session, ws } = createSession();
+
+        ws.emitOpen();
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
+        await flushMicrotasks();
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
+        await flushMicrotasks();
+
+        ws.close.mockClear();
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({
+            data: undefined,
+            key: '',
+            type: WsIoPacketType.Event,
+        }));
+
+        await session._waitForClose;
+
+        expect(ws.close).toHaveBeenCalledOnce();
+        await session._cleanup();
+    });
+
     it('isolates user event handler failures from the transport lifecycle', async () => {
         const handler = vi.fn(() => {
             throw new Error('handler failed');

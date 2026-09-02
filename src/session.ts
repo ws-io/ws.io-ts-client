@@ -20,7 +20,6 @@ enum SessionStatus {
     Created,
     Initiating,
     Ready,
-    Readying,
 }
 
 // Classes
