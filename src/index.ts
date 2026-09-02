@@ -18,6 +18,15 @@ export class WsIoClient<
         this.#runtime = new WsIoClientRuntime(this, url, config);
     }
 
+    // Public getters
+    get cancelled() {
+        return this.#runtime._cancelled;
+    }
+
+    get isSessionReady() {
+        return this.#runtime._isSessionReady;
+    }
+
     // Public methods
     connect() {
         return this.#runtime._connect();
@@ -51,14 +60,5 @@ export class WsIoClient<
     offByHandlerId(event: keyof ToClientEvents | (string & {}), handlerId: number) {
         if (typeof event !== 'string') throw new Error('Event must be a string');
         this.#runtime._offByHandlerId(event, handlerId);
-    }
-
-    // Public getters
-    get cancelled() {
-        return this.#runtime._cancelled;
-    }
-
-    get isSessionReady() {
-        return this.#runtime._isSessionReady;
     }
 }
