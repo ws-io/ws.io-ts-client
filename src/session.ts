@@ -7,6 +7,7 @@ import type { WsIoPacketData } from './core/packet';
 import type { WsIoEncodedPacketData } from './core/packet/codecs';
 import type { WsIoClientRuntime } from './runtime';
 import { waitWithTimeout } from './utils';
+import { AsyncQueue } from './utils/queue';
 
 type WsIoWebSocketData = ArrayBuffer | ArrayBufferView<ArrayBuffer> | string;
 
@@ -26,6 +27,10 @@ enum SessionStatus {
 export class WsIoClientSession {
     // Private properties
     #initTimeoutTimeout?: NodeJS.Timeout;
+    readonly #eventDispatchAbortController = new AbortController();
+    readonly #eventDispatchAbortPromise: Promise<void>;
+    readonly #eventDispatchPromise: Promise<void>;
+    readonly #eventQueue = new AsyncQueue<WsIoPacket>();
     #pingIntervalTimer?: NodeJS.Timeout;
     #readyTimeoutTimeout?: NodeJS.Timeout;
     #resolveClose?: (event?: CloseEvent) => void;
@@ -39,6 +44,12 @@ export class WsIoClientSession {
     constructor(runtime: WsIoClientRuntime, ws: WebSocket) {
         this.#runtime = runtime;
         this.#ws = ws;
+        this.#eventDispatchAbortPromise = new Promise((resolve) => {
+            this.#eventDispatchAbortController.signal.addEventListener('abort', () => resolve(), { once: true });
+        });
+
+        this.#eventDispatchPromise = this.#runEventDispatcher();
+
         this._waitForClose = new Promise((resolve) => {
             this.#resolveClose = resolve;
             ws.onclose = (event) => this.#finishClose(event);
@@ -82,6 +93,25 @@ export class WsIoClientSession {
         }
     }
 
+    async #dispatchEventPacket(packet: WsIoPacket) {
+        if (!packet.key) return;
+
+        const handlers = this.#runtime._eventHandlers[packet.key];
+        if (!handlers) return;
+
+        const data = packet.data ? this.#runtime._config.packetCodec.decodeData<any[]>(packet.data) || [] : [];
+        const handlersPromise = Promise.all(
+            [...handlers.values()].map((handler) => Promise.resolve()
+                .then(() => handler(...data))
+                .catch(() => {})),
+        );
+
+        await Promise.race([
+            handlersPromise,
+            this.#eventDispatchAbortPromise,
+        ]);
+    }
+
     #finishClose(event?: CloseEvent) {
         this.#ws.onclose = null;
         this.#ws.onmessage = null;
@@ -94,11 +124,9 @@ export class WsIoClientSession {
         this.#runtime._disconnect().catch(() => {});
     }
 
-    #handleEventPacket(event: string, packetData?: WsIoPacketData) {
-        const handlers = this.#runtime._eventHandlers[event];
-        if (!handlers) return;
-        const data = packetData ? this.#runtime._config.packetCodec.decodeData<any[]>(packetData) || [] : [];
-        for (const handler of handlers.values()) Promise.resolve().then(() => handler(...data)).catch(() => {});
+    #handleEventPacket(packet: WsIoPacket) {
+        if (!packet.key) throw new Error('Event packet missing key');
+        this.#eventQueue.send(packet);
     }
 
     async #handleIncomingPacket(data: WsIoEncodedPacketData) {
@@ -107,8 +135,7 @@ export class WsIoClientSession {
             case WsIoPacketType.Disconnect: return this.#handleDisconnectPacket();
             case WsIoPacketType.Event:
                 if (!this.isReady) return;
-                if (!packet.key) throw new Error('Event packet missing key');
-                return this.#handleEventPacket(packet.key, packet.data);
+                return this.#handleEventPacket(packet);
             case WsIoPacketType.Init: return await this.#handleInitPacket(packet.data);
             case WsIoPacketType.Ready: return this.#handleReadyPacket();
         }
@@ -176,6 +203,19 @@ export class WsIoClientSession {
         (async () => await this.#runtime._config.onSessionReadyHandler?.(this))().catch(() => {});
     }
 
+    async #runEventDispatcher() {
+        for await (const packet of this.#eventQueue) {
+            if (this.#eventDispatchAbortController.signal.aborted) break;
+
+            try {
+                await this.#dispatchEventPacket(packet);
+            } catch {
+                this._close();
+                break;
+            }
+        }
+    }
+
     #sendPacket(packet: WsIoPacket) {
         this.#ws.send(toWsIoWebSocketData(this.#runtime._config.packetCodec.encode(packet)));
     }
@@ -189,6 +229,11 @@ export class WsIoClientSession {
     async _cleanup() {
         // Set state to Closing
         this.#status.store(SessionStatus.Closing);
+
+        // Stop event dispatch and drop queued packets.
+        this.#eventDispatchAbortController.abort();
+        this.#eventQueue.closeAndClear();
+        await this.#eventDispatchPromise;
 
         // Clear timeouts
         if (this.#initTimeoutTimeout) clearTimeout(this.#initTimeoutTimeout);

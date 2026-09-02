@@ -81,6 +81,15 @@ async function flushMicrotasks() {
     await Promise.resolve();
 }
 
+async function waitFor(predicate: () => boolean) {
+    for (let index = 0; index < 50; index++) {
+        if (predicate()) return;
+        await new Promise<void>((resolve) => void setTimeout(resolve, 0));
+    }
+
+    throw new Error('Timed out waiting for condition');
+}
+
 describe.concurrent('wsIoClientSession', () => {
     it('performs init to ready handshake and wakes buffered emit flushing', async () => {
         const initHandler = vi.fn(() => ['client-init']);
@@ -155,7 +164,7 @@ describe.concurrent('wsIoClientSession', () => {
             WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['payload'])),
         ));
 
-        await flushMicrotasks();
+        await waitFor(() => handler.mock.calls.length === 1);
 
         expect(handler).toHaveBeenCalledWith('payload');
         expect(ws.close).not.toHaveBeenCalled();
@@ -163,6 +172,93 @@ describe.concurrent('wsIoClientSession', () => {
         session._close();
         await session._waitForClose;
         await session._cleanup();
+    });
+
+    it('dispatches incoming events in wire order and waits for each event', async () => {
+        const calls: string[] = [];
+        let releaseFirst!: () => void;
+        const firstHandlerStarted = new Promise<void>((resolve) => {
+            releaseFirst = resolve;
+        });
+
+        const {
+            runtime,
+            session,
+            ws,
+        } = createSession();
+
+        runtime._eventHandlers.event = new Map([
+            [
+                0,
+                async (payload: string) => {
+                    calls.push(`start:${payload}`);
+                    if (payload === 'first') await firstHandlerStarted;
+                    calls.push(`end:${payload}`);
+                },
+            ],
+        ]);
+
+        ws.emitOpen();
+        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        await flushMicrotasks();
+        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        await flushMicrotasks();
+
+        ws.emitMessage(wsIoPacketJsonCodec.encode(
+            WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['first'])),
+        ));
+
+        ws.emitMessage(wsIoPacketJsonCodec.encode(
+            WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['second'])),
+        ));
+
+        await waitFor(() => calls.length === 1);
+        expect(calls).toStrictEqual(['start:first']);
+
+        releaseFirst();
+        await waitFor(() => calls.length === 4);
+        expect(calls).toStrictEqual([
+            'start:first',
+            'end:first',
+            'start:second',
+            'end:second',
+        ]);
+
+        session._close();
+        await session._waitForClose;
+        await session._cleanup();
+    });
+
+    it('stops event dispatch during cleanup without waiting for a hanging handler', async () => {
+        let hasStarted = false;
+
+        const {
+            runtime,
+            session,
+            ws,
+        } = createSession();
+
+        runtime._eventHandlers.event = new Map([
+            [
+                0,
+                async () => {
+                    hasStarted = true;
+                    await new Promise<void>(() => {});
+                },
+            ],
+        ]);
+
+        ws.emitOpen();
+        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        await flushMicrotasks();
+        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        await flushMicrotasks();
+        ws.emitMessage(wsIoPacketJsonCodec.encode(
+            WsIoPacket.newEvent('event'),
+        ));
+
+        await waitFor(() => hasStarted);
+        await expect(session._cleanup()).resolves.toBeUndefined();
     });
 
     it('does not revive a closing session on a late websocket open', () => {
