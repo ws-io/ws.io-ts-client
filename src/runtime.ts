@@ -4,7 +4,7 @@ import Mutex from 'p-mutex';
 import { AtomicStatus } from './core/atomic/status';
 import { WsIoPacket } from './core/packet';
 import type { WsIoEncodedPacketData } from './core/packet/codecs';
-import { wsIoPacketJsonCodec } from './core/packet/codecs/json';
+import { wsIoPacketMsgpackCodec } from './core/packet/codecs/msgpack';
 import { WsIoClientSession } from './session';
 import type {
     ResolvedWsIoClientConfig,
@@ -60,7 +60,7 @@ export class WsIoClientRuntime {
                 initHandlerTimeout: 3 * 1000,
                 initPacketTimeout: 5 * 1000,
                 onSessionCloseHandlerTimeout: 2 * 1000,
-                packetCodec: wsIoPacketJsonCodec,
+                packetCodec: wsIoPacketMsgpackCodec,
                 pingInterval: 25 * 1000,
                 readyPacketTimeout: 5 * 1000,
                 reconnectDelay: 1 * 1000,

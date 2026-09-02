@@ -15,7 +15,6 @@ import type {
     WsIoPacketCodec,
 } from '../src/core/packet/codecs';
 import { wsIoPacketCborCodec } from '../src/core/packet/codecs/cbor';
-import { wsIoPacketJsonCodec } from '../src/core/packet/codecs/json';
 import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
 import { WsIoClientRuntime } from '../src/runtime';
 
@@ -97,7 +96,7 @@ describe('wsIoClientRuntime', () => {
         const runtime = new WsIoClientRuntime(
             {} as never,
             'ws://example.test/app',
-            { packetCodec: wsIoPacketJsonCodec },
+            {},
         );
 
         await runtime._connect();
@@ -105,14 +104,17 @@ describe('wsIoClientRuntime', () => {
 
         const ws = FakeRuntimeWebSocket.instances[0]!;
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
         await flushMicrotasks();
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
-        await waitFor(() => decodeSentPackets(ws, wsIoPacketJsonCodec).some((packet) => packet.key === 'queued-event'));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
+        await waitFor(() => decodeSentPackets(ws, wsIoPacketMsgpackCodec)
+            .some((packet) => packet.key === 'queued-event'));
 
-        const eventPacket = decodeSentPackets(ws, wsIoPacketJsonCodec).find((packet) => packet.key === 'queued-event');
+        const eventPacket = decodeSentPackets(ws, wsIoPacketMsgpackCodec)
+            .find((packet) => packet.key === 'queued-event');
+
         expect(eventPacket?.type).toBe(WsIoPacketType.Event);
-        expect(wsIoPacketJsonCodec.decodeData(eventPacket!.data!)).toStrictEqual(['payload']);
+        expect(wsIoPacketMsgpackCodec.decodeData(eventPacket!.data!)).toStrictEqual(['payload']);
 
         await runtime._disconnect();
     });

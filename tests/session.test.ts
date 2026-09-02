@@ -10,7 +10,7 @@ import {
     WsIoPacketType,
 } from '../src/core/packet';
 import type { WsIoEncodedPacketData } from '../src/core/packet/codecs';
-import { wsIoPacketJsonCodec } from '../src/core/packet/codecs/json';
+import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
 import type { WsIoClientRuntime } from '../src/runtime';
 import { WsIoClientSession } from '../src/session';
 import type { ResolvedWsIoClientConfig } from '../src/types/config';
@@ -52,7 +52,7 @@ function createRuntime(config: Partial<ResolvedWsIoClientConfig> = {}) {
             initHandlerTimeout: 1_000,
             initPacketTimeout: 10_000,
             onSessionCloseHandlerTimeout: 1_000,
-            packetCodec: wsIoPacketJsonCodec,
+            packetCodec: wsIoPacketMsgpackCodec,
             pingInterval: 10_000,
             readyPacketTimeout: 10_000,
             reconnectDelay: 1_000,
@@ -104,15 +104,18 @@ describe.concurrent('wsIoClientSession', () => {
         });
 
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit(wsIoPacketJsonCodec.encodeData(['server-init']))));
+        ws.emitMessage(
+            wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit(wsIoPacketMsgpackCodec.encodeData(['server-init']))),
+        );
+
         await flushMicrotasks();
 
         expect(initHandler).toHaveBeenCalledWith(session, ['server-init']);
-        const initResponse = wsIoPacketJsonCodec.decode(ws.sent.at(-1) as string);
+        const initResponse = wsIoPacketMsgpackCodec.decode(ws.sent.at(-1) as WsIoEncodedPacketData);
         expect(initResponse.type).toBe(WsIoPacketType.Init);
-        expect(wsIoPacketJsonCodec.decodeData(initResponse.data!)).toStrictEqual(['client-init']);
+        expect(wsIoPacketMsgpackCodec.decodeData(initResponse.data!)).toStrictEqual(['client-init']);
 
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
         await flushMicrotasks();
 
         expect(session.isReady).toBe(true);
@@ -128,7 +131,7 @@ describe.concurrent('wsIoClientSession', () => {
         const { session, ws } = createSession();
 
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
         await session._waitForClose;
 
         expect(ws.close).toHaveBeenCalledOnce();
@@ -154,15 +157,15 @@ describe.concurrent('wsIoClientSession', () => {
         ]);
 
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
         await flushMicrotasks();
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
         await flushMicrotasks();
 
         ws.close.mockClear();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(
-            WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['payload'])),
-        ));
+        ws.emitMessage(
+            wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event', wsIoPacketMsgpackCodec.encodeData(['payload']))),
+        );
 
         await waitFor(() => handler.mock.calls.length === 1);
 
@@ -199,18 +202,18 @@ describe.concurrent('wsIoClientSession', () => {
         ]);
 
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
         await flushMicrotasks();
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
         await flushMicrotasks();
 
-        ws.emitMessage(wsIoPacketJsonCodec.encode(
-            WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['first'])),
-        ));
+        ws.emitMessage(
+            wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event', wsIoPacketMsgpackCodec.encodeData(['first']))),
+        );
 
-        ws.emitMessage(wsIoPacketJsonCodec.encode(
-            WsIoPacket.newEvent('event', wsIoPacketJsonCodec.encodeData(['second'])),
-        ));
+        ws.emitMessage(
+            wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event', wsIoPacketMsgpackCodec.encodeData(['second']))),
+        );
 
         await waitFor(() => calls.length === 1);
         expect(calls).toStrictEqual(['start:first']);
@@ -249,13 +252,11 @@ describe.concurrent('wsIoClientSession', () => {
         ]);
 
         ws.emitOpen();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(WsIoPacket.newInit()));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
         await flushMicrotasks();
-        ws.emitMessage(wsIoPacketJsonCodec.encode({ type: WsIoPacketType.Ready }));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
         await flushMicrotasks();
-        ws.emitMessage(wsIoPacketJsonCodec.encode(
-            WsIoPacket.newEvent('event'),
-        ));
+        ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event')));
 
         await waitFor(() => hasStarted);
         await expect(session._cleanup()).resolves.toBeUndefined();

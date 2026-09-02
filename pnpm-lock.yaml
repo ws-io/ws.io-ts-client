@@ -11,6 +11,9 @@ importers:
       defu:
         specifier: ^6.1.7
         version: 6.1.7
+      msgpackr:
+        specifier: ^2.1.0
+        version: 2.1.0
       p-mutex:
         specifier: ^1.0.0
         version: 1.0.0
@@ -48,9 +51,6 @@ importers:
       knip:
         specifier: ^6.34.0
         version: 6.34.0
-      msgpackr:
-        specifier: ^2.1.0
-        version: 2.1.0
       publint:
         specifier: ^0.3.24
         version: 0.3.24

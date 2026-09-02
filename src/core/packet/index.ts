@@ -1,7 +1,7 @@
 import { getEnumNumberValues } from '../../utils/enum';
 
 export type InnerPacket = [WsIoPacketType, null | string, null | WsIoPacketData];
-export type WsIoPacketData = ArrayBufferView<ArrayBufferLike> | number[];
+export type WsIoPacketData = ArrayBufferView<ArrayBufferLike>;
 
 // eslint-disable-next-line ts/no-unsafe-declaration-merging
 export interface WsIoPacket {
@@ -40,7 +40,7 @@ export class WsIoPacket {
             throw new Error(`Invalid packet key: ${innerPacket[1]}`);
         }
 
-        if (innerPacket[2] !== null && !Array.isArray(innerPacket[2]) && !ArrayBuffer.isView(innerPacket[2])) {
+        if (innerPacket[2] !== null && !ArrayBuffer.isView(innerPacket[2])) {
             throw new Error(`Invalid packet data: ${innerPacket[2]}`);
         }
 

@@ -10,7 +10,6 @@ import {
 } from '../src/core/packet';
 import type { WsIoPacketCodec } from '../src/core/packet/codecs';
 import { wsIoPacketCborCodec } from '../src/core/packet/codecs/cbor';
-import { wsIoPacketJsonCodec } from '../src/core/packet/codecs/json';
 import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
 
 const binaryCodecs: readonly (readonly [string, WsIoPacketCodec])[] = [
@@ -55,25 +54,22 @@ describe.concurrent('wsIoPacket', () => {
             'event',
             'bad' as never,
         ])).toThrow('Invalid packet data');
+
+        expect(() => WsIoPacket.fromInner([
+            WsIoPacketType.Event,
+            'event',
+            [
+                1,
+                2,
+                3,
+            ] as never,
+        ])).toThrow('Invalid packet data');
     });
 
-    it('keeps numeric JSON packet data roundtrippable', () => {
-        const data = wsIoPacketJsonCodec.encodeData([
-            'payload',
-            1,
-        ]);
-
-        const decoded = wsIoPacketJsonCodec.decode(wsIoPacketJsonCodec.encode(WsIoPacket.newEvent('event', data)));
-
-        expect(decoded).toMatchObject({
-            key: 'event',
-            type: WsIoPacketType.Event,
-        });
-
-        expect(wsIoPacketJsonCodec.decodeData(decoded.data!)).toStrictEqual([
-            'payload',
-            1,
-        ]);
+    it('rejects text packet payloads at the codec boundary', () => {
+        expect(() => wsIoPacketMsgpackCodec.decode('not binary' as never)).toThrow(
+            'expected binary data',
+        );
     });
 
     it.each(binaryCodecs)('keeps binary %s packet data roundtrippable as bytes', (_name, codec) => {

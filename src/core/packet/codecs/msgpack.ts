@@ -16,10 +16,7 @@ if (!isNativeAccelerationEnabled && !isBrowser) {
 }
 
 export const wsIoPacketMsgpackCodec: WsIoPacketCodec = Object.freeze({
-    decode(data) {
-        if (typeof data === 'string') throw new Error('Invalid packet format: expected ArrayBuffer data');
-        return WsIoPacket.fromInner(msgpackDecode(packetDataToUint8Array(data)));
-    },
+    decode: (data) => WsIoPacket.fromInner(msgpackDecode(packetDataToUint8Array(data))),
     decodeData: <T>(bytes: WsIoPacketData): null | T => msgpackDecode(packetDataToUint8Array(bytes)),
     encode: (packet) => msgpackEncode(WsIoPacket.toInner(packet)),
     encodeData: (data) => msgpackEncode(data),

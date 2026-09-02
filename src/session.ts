@@ -9,7 +9,7 @@ import type { WsIoClientRuntime } from './runtime';
 import { waitWithTimeout } from './utils';
 import { AsyncQueue } from './utils/queue';
 
-type WsIoWebSocketData = ArrayBuffer | ArrayBufferView<ArrayBuffer> | string;
+type WsIoWebSocketData = ArrayBuffer | ArrayBufferView<ArrayBuffer>;
 
 // Enums
 enum SessionStatus {
@@ -287,7 +287,7 @@ export class WsIoClientSession {
 }
 
 function toWsIoWebSocketData(data: WsIoEncodedPacketData): WsIoWebSocketData {
-    if (typeof data === 'string' || data instanceof ArrayBuffer) return data;
+    if (data instanceof ArrayBuffer) return data;
     if (data.buffer instanceof ArrayBuffer) {
         return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
     }
