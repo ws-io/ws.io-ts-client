@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.4.0
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.10...v0.4.0)
+
+### 🚀 Enhancements
+
+- **protocol:** ⚠️  Switch TypeScript client to binary MsgPack ([dc671c6](https://github.com/ws-io/ws.io-ts-client/commit/dc671c6))
+
+### 🩹 Fixes
+
+- Support binary packet data in codecs ([3e095d7](https://github.com/ws-io/ws.io-ts-client/commit/3e095d7))
+- Align binary codec transport types ([56868ef](https://github.com/ws-io/ws.io-ts-client/commit/56868ef))
+- ⚠️  Preserve per-connection event ordering ([458b975](https://github.com/ws-io/ws.io-ts-client/commit/458b975))
+- ⚠️  Enforce event-key validation and remove dead runtime code ([8a2849f](https://github.com/ws-io/ws.io-ts-client/commit/8a2849f))
+
+### 📖 Documentation
+
+- Add TypeScript migration guide ([f012dc5](https://github.com/ws-io/ws.io-ts-client/commit/f012dc5))
+
+### 🏡 Chore
+
+- Ignore local AI tooling artifacts ([7cf272b](https://github.com/ws-io/ws.io-ts-client/commit/7cf272b))
+- Update `modify-files-permissions.sh` ([c56f31f](https://github.com/ws-io/ws.io-ts-client/commit/c56f31f))
+- Update `modify-files-permissions.sh` ([249c4c8](https://github.com/ws-io/ws.io-ts-client/commit/249c4c8))
+- Update `modify-files-permissions.sh` ([4c193c3](https://github.com/ws-io/ws.io-ts-client/commit/4c193c3))
+- Update `.gitignore` ([5d5bbc5](https://github.com/ws-io/ws.io-ts-client/commit/5d5bbc5))
+- Upgrade deps ([f485a46](https://github.com/ws-io/ws.io-ts-client/commit/f485a46))
+- Upgrade deps ([73b585e](https://github.com/ws-io/ws.io-ts-client/commit/73b585e))
+- Move code block order ([ba428cf](https://github.com/ws-io/ws.io-ts-client/commit/ba428cf))
+
+#### ⚠️ Breaking Changes
+
+- **protocol:** ⚠️  Switch TypeScript client to binary MsgPack ([dc671c6](https://github.com/ws-io/ws.io-ts-client/commit/dc671c6))
+- ⚠️  Preserve per-connection event ordering ([458b975](https://github.com/ws-io/ws.io-ts-client/commit/458b975))
+- ⚠️  Enforce event-key validation and remove dead runtime code ([8a2849f](https://github.com/ws-io/ws.io-ts-client/commit/8a2849f))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.3.10
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.9...v0.3.10)
