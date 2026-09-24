@@ -108,23 +108,23 @@
     "defu": "^6.1.7",
     "msgpackr": "^2.1.0",
     "p-mutex": "^1.0.0",
-    "type-fest": "^5.9.0",
+    "type-fest": "^5.10.0",
     "yocto-queue": "^1.2.2"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.3.0",
-    "@kikiutils/eslint-config": "^9.2.0",
+    "@antfu/eslint-config": "^9.5.1",
+    "@kikiutils/eslint-config": "^9.2.1",
     "@kikiutils/tsconfigs": "^7.0.0",
-    "@types/node": "^26.4.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@types/node": "^26.6.2",
+    "@vitest/coverage-v8": "^5.0.1",
     "cbor-x": "^1.6.6",
     "changelogen": "^0.6.2",
-    "eslint": "^10.9.1",
-    "knip": "^6.34.0",
+    "eslint": "^10.11.0",
+    "knip": "^6.38.0",
     "publint": "^0.3.24",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.0",
     "typescript": "^6.0.3",
     "unplugin-unused": "^0.6.0",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.1"
   }
 }
