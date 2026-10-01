@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.4.1
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.4.0...v0.4.1)
+
+### 🩹 Fixes
+
+- **session:** Stop event dispatch when closing ([b9d4337](https://github.com/ws-io/ws.io-ts-client/commit/b9d4337))
+
+### 🏡 Chore
+
+- Add `pnpm-workspace.yaml` ([bcd3c17](https://github.com/ws-io/ws.io-ts-client/commit/bcd3c17))
+- Update `pnpm-workspace.yaml` ([fe5e43f](https://github.com/ws-io/ws.io-ts-client/commit/fe5e43f))
+- Update `pnpm-workspace.yaml` ([5f000dd](https://github.com/ws-io/ws.io-ts-client/commit/5f000dd))
+- Upgrade deps ([4f0b8da](https://github.com/ws-io/ws.io-ts-client/commit/4f0b8da))
+- Update `.gitignore` ([87bd40c](https://github.com/ws-io/ws.io-ts-client/commit/87bd40c))
+- Upgrade deps ([8cda9b2](https://github.com/ws-io/ws.io-ts-client/commit/8cda9b2))
+- Upgrade deps ([4ebb83b](https://github.com/ws-io/ws.io-ts-client/commit/4ebb83b))
+
+### ✅ Tests
+
+- **session:** Run lifecycle tests sequentially to avoid mock interference ([bc9f03a](https://github.com/ws-io/ws.io-ts-client/commit/bc9f03a))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.4.0
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.3.10...v0.4.0)
