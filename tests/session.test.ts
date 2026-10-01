@@ -90,7 +90,8 @@ async function waitFor(predicate: () => boolean) {
     throw new Error('Timed out waiting for condition');
 }
 
-describe.concurrent('wsIoClientSession', () => {
+// Keep lifecycle tests sequential: mock clearing and the console spy are shared.
+describe('wsIoClientSession', () => {
     it('performs init to ready handshake and wakes buffered emit flushing', async () => {
         const initHandler = vi.fn(() => ['client-init']);
         const onSessionReadyHandler = vi.fn();
