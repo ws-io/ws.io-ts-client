@@ -284,6 +284,67 @@ describe.concurrent('wsIoClientSession', () => {
         await expect(session._cleanup()).resolves.toBeUndefined();
     });
 
+    it.each([
+        'local',
+        'remote',
+        'disconnect',
+    ] as const)(
+        'stops queued event dispatch immediately on %s close',
+        async (kind) => {
+            const {
+                runtime,
+                session,
+                ws,
+            } = createSession();
+
+            const handler = vi.fn();
+            runtime._eventHandlers.event = new Map([
+                [
+                    0,
+                    handler,
+                ],
+            ]);
+
+            ws.emitOpen();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
+            await flushMicrotasks();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
+            await flushMicrotasks();
+            ws.autoClose = false;
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event')));
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newEvent('event')));
+
+            if (kind === 'local') session._close();
+            else if (kind === 'remote') ws.emitClose();
+            else ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Disconnect }));
+
+            expect(session.isReady).toBe(false);
+            await session._cleanup();
+            expect(handler).not.toHaveBeenCalled();
+            if (kind === 'disconnect') expect(runtime._disconnect).toHaveBeenCalledOnce();
+        },
+    );
+
+    it('reports ready handler failures without closing the session', async () => {
+        const error = new Error('ready hook failed');
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const { session, ws } = createSession({ onSessionReadyHandler: () => Promise.reject(error) });
+        try {
+            ws.emitOpen();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
+            await flushMicrotasks();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
+            await flushMicrotasks();
+            await waitFor(() => errorSpy.mock.calls.length > 0);
+            expect(errorSpy).toHaveBeenCalledWith('ws.io client session ready handler failed', error);
+            expect(session.isReady).toBe(true);
+        } finally {
+            errorSpy.mockRestore();
+            session._close();
+            await session._cleanup();
+        }
+    });
+
     it('does not revive a closing session on a late websocket open', () => {
         const { session, ws } = createSession();
         ws.autoClose = false;

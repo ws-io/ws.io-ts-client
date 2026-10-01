@@ -93,7 +93,7 @@ export class WsIoClientSession {
     }
 
     async #dispatchEventPacket(packet: WsIoPacket) {
-        if (!packet.key) return;
+        if (this.#eventDispatchAbortController.signal.aborted || !this.isReady || !packet.key) return;
 
         const handlers = this.#runtime._eventHandlers[packet.key];
         if (!handlers) return;
@@ -101,7 +101,10 @@ export class WsIoClientSession {
         const data = packet.data ? this.#runtime._config.packetCodec.decodeData<any[]>(packet.data) || [] : [];
         const handlersPromise = Promise.all(
             [...handlers.values()].map((handler) => Promise.resolve()
-                .then(() => handler(...data))
+                .then(() => {
+                    if (this.#eventDispatchAbortController.signal.aborted || !this.isReady) return;
+                    return handler(...data);
+                })
                 .catch(() => {})),
         );
 
@@ -112,14 +115,19 @@ export class WsIoClientSession {
     }
 
     #finishClose(event?: CloseEvent) {
+        if (!this.#status.is(SessionStatus.Closed)) this.#status.store(SessionStatus.Closing);
+        this.#stopEventDispatch();
+
         this.#ws.onclose = null;
         this.#ws.onmessage = null;
         this.#ws.onopen = null;
+
         this.#resolveClose?.(event);
         this.#resolveClose = undefined;
     }
 
     #handleDisconnectPacket() {
+        this._close();
         this.#runtime._disconnect().catch(() => {});
     }
 
@@ -199,12 +207,14 @@ export class WsIoClientSession {
         this.#runtime._wakeSendEventDataPromise?.();
 
         // Invoke onSessionReadyHandler if configured
-        (async () => await this.#runtime._config.onSessionReadyHandler?.(this))().catch(() => {});
+        (async () => await this.#runtime._config.onSessionReadyHandler?.(this))().catch(
+            (error) => console.error('ws.io client session ready handler failed', error),
+        );
     }
 
     async #runEventDispatcher() {
         for await (const packet of this.#eventQueue) {
-            if (this.#eventDispatchAbortController.signal.aborted) break;
+            if (this.#eventDispatchAbortController.signal.aborted || !this.isReady) break;
 
             try {
                 await this.#dispatchEventPacket(packet);
@@ -219,6 +229,11 @@ export class WsIoClientSession {
         this.#ws.send(toWsIoWebSocketData(this.#runtime._config.packetCodec.encode(packet)));
     }
 
+    #stopEventDispatch() {
+        this.#eventDispatchAbortController.abort();
+        this.#eventQueue.closeAndClear();
+    }
+
     // Internal getters
     get _isCreated() {
         return this.#status.is(SessionStatus.Created);
@@ -230,8 +245,7 @@ export class WsIoClientSession {
         this.#status.store(SessionStatus.Closing);
 
         // Stop event dispatch and drop queued packets.
-        this.#eventDispatchAbortController.abort();
-        this.#eventQueue.closeAndClear();
+        this.#stopEventDispatch();
         await this.#eventDispatchPromise;
 
         // Clear timeouts
@@ -264,6 +278,8 @@ export class WsIoClientSession {
                 return;
             default: this.#status.store(SessionStatus.Closing);
         }
+
+        this.#stopEventDispatch();
 
         // Send websocket close frame to initiate graceful shutdown
         this.#closeWebSocket();
