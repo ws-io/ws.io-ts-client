@@ -6,6 +6,9 @@ trustPolicyExclude:
 
 shellEmulator: true
 
+overrides:
+  '@typescript-eslint/eslint-plugin': 8.71.0
+
 allowBuilds:
   cbor-extract: true
   msgpackr-extract: true
