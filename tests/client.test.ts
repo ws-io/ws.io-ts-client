@@ -11,6 +11,12 @@ describe.concurrent('wsIoClient public guards', () => {
         expect(() => new WsIoClient('http://example.test')).toThrow('Invalid URL scheme: http');
     });
 
+    it('rejects namespace paths outside the whitelist', () => {
+        expect(() => new WsIoClient('ws://example.test/世界')).toThrow('Invalid namespace path: /%E4%B8%96%E7%95%8C');
+        expect(() => new WsIoClient('ws://example.test/a+b')).toThrow('Invalid namespace path: /a+b');
+        expect(() => new WsIoClient('ws://example.test/a-b_c.d/E9')).not.toThrow();
+    });
+
     it('rejects non-string event names', () => {
         const client = new WsIoClient('ws://example.test') as any;
 

@@ -68,7 +68,10 @@ export class WsIoClientRuntime {
             } satisfies ResolvedWsIoClientConfig,
         );
 
-        url.searchParams.set('namespace', `/${url.pathname.split('/').filter(Boolean).join('/')}`);
+        // URL parsing already removes `.` and `..` segments.
+        const namespace = `/${url.pathname.split('/').filter(Boolean).join('/')}`;
+        if (!/^[\w./-]+$/.test(namespace)) throw new Error(`Invalid namespace path: ${namespace}`);
+        url.searchParams.set('namespace', namespace);
         url.pathname = `/${this._config.requestPath.split('/').filter(Boolean).join('/')}`;
         this.#connectUrl = url;
         this._client = client;

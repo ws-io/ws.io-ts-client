@@ -48,10 +48,11 @@ The TypeScript queue is currently unbounded, so slow handlers or high event rate
 - The unused `SessionStatus.Readying` variant was removed.
 - `AsyncQueue.trySend()` was removed; use `send()` and handle the error when the queue is closed.
 
-### 6. Namespace and request paths use consistent slash normalization
+### 6. Namespace and request path rules
 
-- The namespace derived from the input URL and the configured `requestPath` use one leading `/`, collapse repeated `/`, and remove trailing `/`. Empty and slash-only paths become `/`; percent-encoded segments are not decoded by normalization.
-- For example, `/app//namespace/` selects `/app/namespace`, and `requestPath: 'socket/'` requests `/socket`. Configure the server route accordingly; incoming request URI paths on the Rust server are still matched exactly.
+- The namespace derived from the input URL and `requestPath` are normalized to one leading `/` without repeated or trailing `/`; for example, `/app//namespace/` selects `/app/namespace`, `requestPath: 'socket/'` requests `/socket`, and empty paths become `/`.
+- The Rust server matches incoming request URI paths exactly against its normalized `request_path`.
+- Namespace paths may contain only ASCII letters, digits, `-`, `_`, `.`, and `/`. The client constructor rejects other names, such as `/世界` or `/a b`.
 
 ## Rust/TypeScript Payload Interoperability
 
