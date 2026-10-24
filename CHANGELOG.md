@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.5.0
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.4.1...v0.5.0)
+
+### 🩹 Fixes
+
+- **deps:** Pin TypeScript ESLint plugin to avoid false positives ([eadca5a](https://github.com/ws-io/ws.io-ts-client/commit/eadca5a))
+- Throw TypeError for non-string event keys ([2833a10](https://github.com/ws-io/ws.io-ts-client/commit/2833a10))
+- ⚠️  Normalize namespace and request paths consistently ([0edfa84](https://github.com/ws-io/ws.io-ts-client/commit/0edfa84))
+
+### 🏡 Chore
+
+- Update ignore files ([d91f81e](https://github.com/ws-io/ws.io-ts-client/commit/d91f81e))
+- Update `modify-files-permissions.sh` ([e5d2bee](https://github.com/ws-io/ws.io-ts-client/commit/e5d2bee))
+- Update `pnpm-workspace.yaml` ([307ba57](https://github.com/ws-io/ws.io-ts-client/commit/307ba57))
+- Remove `@typescript-eslint/eslint-plugin` from `overrides` ([9a7922a](https://github.com/ws-io/ws.io-ts-client/commit/9a7922a))
+- Update `minimumReleaseAgeExcludes` ([362ebd7](https://github.com/ws-io/ws.io-ts-client/commit/362ebd7))
+- Lint code ([d781b33](https://github.com/ws-io/ws.io-ts-client/commit/d781b33))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  Normalize namespace and request paths consistently ([0edfa84](https://github.com/ws-io/ws.io-ts-client/commit/0edfa84))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.4.1
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.4.0...v0.4.1)
