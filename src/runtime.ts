@@ -68,11 +68,10 @@ export class WsIoClientRuntime {
             } satisfies ResolvedWsIoClientConfig,
         );
 
-        // URL parsing already removes `.` and `..` segments.
-        const namespace = `/${url.pathname.split('/').filter(Boolean).join('/')}`;
-        if (!/^[\w./-]+$/.test(namespace)) throw new Error(`Invalid namespace path: ${namespace}`);
+        const namespace = resolvePath(url.pathname);
+        const requestPath = resolvePath(this._config.requestPath);
         url.searchParams.set('namespace', namespace);
-        url.pathname = `/${this._config.requestPath.split('/').filter(Boolean).join('/')}`;
+        url.pathname = requestPath;
         this.#connectUrl = url;
         this._client = client;
     }
@@ -247,4 +246,14 @@ export class WsIoClientRuntime {
             if (!handlers.size) this._off(event);
         }
     }
+}
+
+// Functions
+function resolvePath(path: string) {
+    const segments = path.split('/').filter(Boolean);
+    if (segments.some((segment) => segment === '.' || segment === '..' || /[^\w.-]/.test(segment))) {
+        throw new Error(`Invalid path: ${path}`);
+    }
+
+    return `/${segments.join('/')}`;
 }

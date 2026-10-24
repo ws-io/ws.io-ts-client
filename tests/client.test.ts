@@ -12,9 +12,22 @@ describe.concurrent('wsIoClient public guards', () => {
     });
 
     it('rejects namespace paths outside the whitelist', () => {
-        expect(() => new WsIoClient('ws://example.test/世界')).toThrow('Invalid namespace path: /%E4%B8%96%E7%95%8C');
-        expect(() => new WsIoClient('ws://example.test/a+b')).toThrow('Invalid namespace path: /a+b');
+        expect(() => new WsIoClient('ws://example.test/世界')).toThrow('Invalid path: /%E4%B8%96%E7%95%8C');
+        expect(() => new WsIoClient('ws://example.test/a+b')).toThrow('Invalid path: /a+b');
         expect(() => new WsIoClient('ws://example.test/a-b_c.d/E9')).not.toThrow();
+    });
+
+    it('rejects invalid request paths before URL rewriting', () => {
+        for (const requestPath of [
+            '/世界',
+            '/a%20b',
+            '/a/../b',
+            '/a\\b',
+            '/a\tb',
+            '/a\nb',
+        ]) {
+            expect(() => new WsIoClient('ws://example.test/test', { requestPath })).toThrow('Invalid path:');
+        }
     });
 
     it('rejects non-string event names', () => {

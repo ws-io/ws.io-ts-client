@@ -52,7 +52,7 @@ The TypeScript queue is currently unbounded, so slow handlers or high event rate
 
 - The namespace derived from the input URL and `requestPath` are normalized to one leading `/` without repeated or trailing `/`; for example, `/app//namespace/` selects `/app/namespace`, `requestPath: 'socket/'` requests `/socket`, and empty paths become `/`.
 - The Rust server matches incoming request URI paths exactly against its normalized `request_path`.
-- Namespace paths may contain only ASCII letters, digits, `-`, `_`, `.`, and `/`. The client constructor rejects other names, such as `/世界` or `/a b`.
+- Namespace and request paths may contain only ASCII letters, digits, `-`, `_`, `.`, and `/`, without `.` or `..` segments; other characters, including `%`, are rejected rather than decoded. The client constructor throws for invalid paths.
 
 ## Rust/TypeScript Payload Interoperability
 
@@ -74,4 +74,4 @@ An event with no arguments can omit packet data.
 - [ ] Ensure every public event key is non-empty.
 - [ ] Account for the unbounded TypeScript queue and the fact that pending events are dropped during cleanup.
 - [ ] If using CBOR, install `cbor-x` and configure the Rust endpoint with its matching CBOR codec.
-- [ ] Align server routes and namespace names with normalized paths, without trailing or repeated slashes.
+- [ ] Change namespaces or request paths that use unsupported characters, and align `requestPath` with the server `request_path`.
