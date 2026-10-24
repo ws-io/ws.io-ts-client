@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.6.0
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.5.0...v0.6.0)
+
+### 🩹 Fixes
+
+- **namespace:** ⚠️  Reject unsupported namespace characters ([028a934](https://github.com/ws-io/ws.io-ts-client/commit/028a934))
+- **path:** ⚠️  Validate namespace and request paths consistently ([657c841](https://github.com/ws-io/ws.io-ts-client/commit/657c841))
+
+#### ⚠️ Breaking Changes
+
+- **namespace:** ⚠️  Reject unsupported namespace characters ([028a934](https://github.com/ws-io/ws.io-ts-client/commit/028a934))
+- **path:** ⚠️  Validate namespace and request paths consistently ([657c841](https://github.com/ws-io/ws.io-ts-client/commit/657c841))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.5.0
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.4.1...v0.5.0)
