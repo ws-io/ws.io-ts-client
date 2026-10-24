@@ -65,6 +65,6 @@ export class WsIoClient<
 
 // Functions
 function assertEventKey(event: unknown): asserts event is string {
-    if (typeof event !== 'string') throw new Error('Event must be a string');
+    if (typeof event !== 'string') throw new TypeError('Event must be a string');
     if (!event) throw new Error('Event key cannot be empty');
 }
