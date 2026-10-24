@@ -48,6 +48,11 @@ The TypeScript queue is currently unbounded, so slow handlers or high event rate
 - The unused `SessionStatus.Readying` variant was removed.
 - `AsyncQueue.trySend()` was removed; use `send()` and handle the error when the queue is closed.
 
+### 6. Namespace and request paths use consistent slash normalization
+
+- The namespace derived from the input URL and the configured `requestPath` use one leading `/`, collapse repeated `/`, and remove trailing `/`. Empty and slash-only paths become `/`; percent-encoded segments are not decoded by normalization.
+- For example, `/app//namespace/` selects `/app/namespace`, and `requestPath: 'socket/'` requests `/socket`. Configure the server route accordingly; incoming request URI paths on the Rust server are still matched exactly.
+
 ## Rust/TypeScript Payload Interoperability
 
 TypeScript `emit('event', value)` always encodes its arguments as `[value]`, and multiple arguments as `[a, b, ...]`. Rust emit and handler types must therefore use a tuple, array, or other sequence such as `(value,)` and `(width, height)` rather than a scalar. TypeScript handlers receive the decoded array through argument spreading. Custom codecs must preserve this array payload shape.
@@ -68,3 +73,4 @@ An event with no arguments can omit packet data.
 - [ ] Ensure every public event key is non-empty.
 - [ ] Account for the unbounded TypeScript queue and the fact that pending events are dropped during cleanup.
 - [ ] If using CBOR, install `cbor-x` and configure the Rust endpoint with its matching CBOR codec.
+- [ ] Align server routes and namespace names with normalized paths, without trailing or repeated slashes.

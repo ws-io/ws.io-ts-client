@@ -68,8 +68,8 @@ export class WsIoClientRuntime {
             } satisfies ResolvedWsIoClientConfig,
         );
 
-        url.searchParams.set('namespace', url.pathname.replaceAll(/\/+/g, '/'));
-        url.pathname = this._config.requestPath.replaceAll(/\/+/g, '/');
+        url.searchParams.set('namespace', `/${url.pathname.split('/').filter(Boolean).join('/')}`);
+        url.pathname = `/${this._config.requestPath.split('/').filter(Boolean).join('/')}`;
         this.#connectUrl = url;
         this._client = client;
     }

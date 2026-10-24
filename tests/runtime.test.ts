@@ -78,14 +78,14 @@ describe('wsIoClientRuntime', () => {
         vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
         const runtime = new WsIoClientRuntime(
             {} as never,
-            'ws://example.test/app//namespace?token=1',
-            { requestPath: '/custom//ws' },
+            'ws://example.test/app//namespace//?token=a%26b&namespace=ignored',
+            { requestPath: '/custom//ws/' },
         );
 
         await runtime._connect();
 
         const url = FakeRuntimeWebSocket.instances[0]!.url;
-        expect(url.toString()).toBe('ws://example.test/custom/ws?token=1&namespace=%2Fapp%2Fnamespace');
+        expect(url.toString()).toBe('ws://example.test/custom/ws?token=a%26b&namespace=%2Fapp%2Fnamespace');
         expect(FakeRuntimeWebSocket.instances[0]!.binaryType).toBe('arraybuffer');
 
         await runtime._disconnect();
