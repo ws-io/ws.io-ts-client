@@ -1,13 +1,13 @@
+minimumReleaseAge: 1440
 minimumReleaseAgeExcludePrune: true
+# minimumReleaseAgeExclude:
 
+resolutionMode: highest
 trustPolicy: no-downgrade
-trustPolicyExclude:
-  - why-is-node-running@3.2.2
-
+strictSsl: true
+preferFrozenLockfile: true
 shellEmulator: true
-
-overrides:
-  '@typescript-eslint/eslint-plugin': 8.71.0
+updateNotifier: false
 
 allowBuilds:
   cbor-extract: true
