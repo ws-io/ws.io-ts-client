@@ -128,51 +128,54 @@ describe('wsIoClientRuntime', () => {
             'msgpack',
             wsIoPacketMsgpackCodec,
         ],
-    ] as const)('roundtrips %s packets through runtime and websocket transport', async (_name, codec) => {
-        vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
-        const eventHandler = vi.fn();
-        const runtime = new WsIoClientRuntime(
-            {} as never,
-            'ws://example.test/app',
-            {
-                initHandler: () => ['client-init'],
-                packetCodec: codec,
-            },
-        );
+    ] as const)(
+        'roundtrips %s packets through runtime and websocket transport',
+        async (_name, codec) => {
+            vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
+            const eventHandler = vi.fn();
+            const runtime = new WsIoClientRuntime(
+                {} as never,
+                'ws://example.test/app',
+                {
+                    initHandler: () => ['client-init'],
+                    packetCodec: codec,
+                },
+            );
 
-        runtime._eventHandlers.serverEvent = new Map([
-            [
-                0,
-                eventHandler,
-            ],
-        ]);
+            runtime._eventHandlers.serverEvent = new Map([
+                [
+                    0,
+                    eventHandler,
+                ],
+            ]);
 
-        await runtime._connect();
+            await runtime._connect();
 
-        const ws = FakeRuntimeWebSocket.instances[0]!;
-        ws.emitOpen();
-        ws.emitMessage(codec.encode(WsIoPacket.newInit(codec.encodeData(['server-init']))));
-        await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.type === WsIoPacketType.Init));
+            const ws = FakeRuntimeWebSocket.instances[0]!;
+            ws.emitOpen();
+            ws.emitMessage(codec.encode(WsIoPacket.newInit(codec.encodeData(['server-init']))));
+            await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.type === WsIoPacketType.Init));
 
-        const initResponse = decodeSentPackets(ws, codec).find((packet) => packet.type === WsIoPacketType.Init);
-        expect(codec.decodeData(initResponse!.data!)).toStrictEqual(['client-init']);
+            const initResponse = decodeSentPackets(ws, codec).find((packet) => packet.type === WsIoPacketType.Init);
+            expect(codec.decodeData(initResponse!.data!)).toStrictEqual(['client-init']);
 
-        ws.emitMessage(codec.encode({ type: WsIoPacketType.Ready }));
-        await waitFor(() => runtime._isSessionReady);
+            ws.emitMessage(codec.encode({ type: WsIoPacketType.Ready }));
+            await waitFor(() => runtime._isSessionReady);
 
-        ws.emitMessage(codec.encode(
-            WsIoPacket.newEvent('serverEvent', codec.encodeData(['server-payload'])),
-        ));
+            ws.emitMessage(codec.encode(
+                WsIoPacket.newEvent('serverEvent', codec.encodeData(['server-payload'])),
+            ));
 
-        await waitFor(() => eventHandler.mock.calls.length === 1);
-        expect(eventHandler).toHaveBeenCalledWith('server-payload');
+            await waitFor(() => eventHandler.mock.calls.length === 1);
+            expect(eventHandler).toHaveBeenCalledWith('server-payload');
 
-        runtime._emit('clientEvent', ['client-payload']);
-        await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.key === 'clientEvent'));
+            runtime._emit('clientEvent', ['client-payload']);
+            await waitFor(() => decodeSentPackets(ws, codec).some((packet) => packet.key === 'clientEvent'));
 
-        const eventPacket = decodeSentPackets(ws, codec).find((packet) => packet.key === 'clientEvent');
-        expect(codec.decodeData(eventPacket!.data!)).toStrictEqual(['client-payload']);
+            const eventPacket = decodeSentPackets(ws, codec).find((packet) => packet.key === 'clientEvent');
+            expect(codec.decodeData(eventPacket!.data!)).toStrictEqual(['client-payload']);
 
-        await runtime._disconnect();
-    });
+            await runtime._disconnect();
+        },
+    );
 });

@@ -78,26 +78,29 @@ describe.concurrent('wsIoPacket', () => {
         );
     });
 
-    it.each(binaryCodecs)('keeps binary %s packet data roundtrippable as bytes', (_name, codec) => {
-        const data = codec.encodeData([
-            'payload',
-            1,
-        ]);
+    it.each(binaryCodecs)(
+        'keeps binary %s packet data roundtrippable as bytes',
+        (_name, codec) => {
+            const data = codec.encodeData([
+                'payload',
+                1,
+            ]);
 
-        const encodedPacket = codec.encode(WsIoPacket.newEvent('event', data));
-        const decoded = codec.decode(encodedPacket);
+            const encodedPacket = codec.encode(WsIoPacket.newEvent('event', data));
+            const decoded = codec.decode(encodedPacket);
 
-        expect(decoded).toMatchObject({
-            key: 'event',
-            type: WsIoPacketType.Event,
-        });
+            expect(decoded).toMatchObject({
+                key: 'event',
+                type: WsIoPacketType.Event,
+            });
 
-        expect(ArrayBuffer.isView(decoded.data)).toBe(true);
-        expect(codec.decodeData(decoded.data!)).toStrictEqual([
-            'payload',
-            1,
-        ]);
-    });
+            expect(ArrayBuffer.isView(decoded.data)).toBe(true);
+            expect(codec.decodeData(decoded.data!)).toStrictEqual([
+                'payload',
+                1,
+            ]);
+        },
+    );
 
     it('rejects empty event keys when creating event packets', () => {
         expect(() => WsIoPacket.newEvent('')).toThrow('Event key cannot be empty');
