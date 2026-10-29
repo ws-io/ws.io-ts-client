@@ -21,11 +21,11 @@ import { WsIoClientRuntime } from '../src/runtime';
 class FakeRuntimeWebSocket {
     static readonly instances: FakeRuntimeWebSocket[] = [];
 
+    readonly sent: unknown[] = [];
     binaryType = '';
     onclose: ((event: CloseEvent) => unknown) | null = null;
     onmessage: ((event: MessageEvent) => unknown) | null = null;
     onopen: ((event: Event) => unknown) | null = null;
-    readonly sent: unknown[] = [];
 
     constructor(readonly url: URL) {
         FakeRuntimeWebSocket.instances.push(this);

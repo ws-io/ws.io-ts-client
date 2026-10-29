@@ -25,17 +25,17 @@ enum SessionStatus {
 // Classes
 export class WsIoClientSession {
     // Private properties
-    #initTimeoutTimeout?: NodeJS.Timeout;
     readonly #eventDispatchAbortController = new AbortController();
     readonly #eventDispatchAbortPromise: Promise<void>;
     readonly #eventDispatchPromise: Promise<void>;
     readonly #eventQueue = new AsyncQueue<WsIoPacket>();
-    #pingIntervalTimer?: NodeJS.Timeout;
-    #readyTimeoutTimeout?: NodeJS.Timeout;
-    #resolveClose?: (event?: CloseEvent) => void;
     readonly #runtime: WsIoClientRuntime;
     readonly #status = new AtomicStatus(SessionStatus.Created);
     readonly #ws: WebSocket;
+    #initTimeoutTimeout?: NodeJS.Timeout;
+    #pingIntervalTimer?: NodeJS.Timeout;
+    #readyTimeoutTimeout?: NodeJS.Timeout;
+    #resolveClose?: (event?: CloseEvent) => void;
 
     // Internal properties
     readonly _waitForClose: Promise<CloseEvent | undefined>;

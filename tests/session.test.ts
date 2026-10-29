@@ -16,10 +16,6 @@ import { WsIoClientSession } from '../src/session';
 import type { ResolvedWsIoClientConfig } from '../src/types/config';
 
 class FakeWebSocket {
-    autoClose = true;
-    onclose: ((event: CloseEvent) => unknown) | null = null;
-    onmessage: ((event: MessageEvent) => unknown) | null = null;
-    onopen: ((event: Event) => unknown) | null = null;
     readonly sent: unknown[] = [];
 
     readonly close = vi.fn(() => {
@@ -29,6 +25,11 @@ class FakeWebSocket {
     readonly send = vi.fn((data: unknown) => {
         this.sent.push(data);
     });
+
+    autoClose = true;
+    onclose: ((event: CloseEvent) => unknown) | null = null;
+    onmessage: ((event: MessageEvent) => unknown) | null = null;
+    onopen: ((event: Event) => unknown) | null = null;
 
     emitClose() {
         this.onclose?.({} as CloseEvent);

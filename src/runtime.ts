@@ -31,25 +31,25 @@ enum RuntimeStatus {
 // Classes
 export class WsIoClientRuntime {
     // Private properties
-    #cancel?: () => void;
-    #connectionLoopPromise?: Promise<void>;
     readonly #connectUrl: URL;
-    #nextEventHandlerId = 0;
-    #nextSessionHandlerId = 0;
     readonly #operateLock = new Mutex();
-    #sendEventDataPromise?: Promise<void>;
     readonly #sendEventDataQueue = new AsyncQueue<WsIoEncodedPacketData>();
-    #session?: WsIoClientSession;
     readonly #sessionCloseHandlers = new Map<number, SessionHandler>();
     readonly #sessionReadyHandlers = new Map<number, SessionHandler>();
     readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
+    #cancel?: () => void;
+    #connectionLoopPromise?: Promise<void>;
+    #nextEventHandlerId = 0;
+    #nextSessionHandlerId = 0;
+    #sendEventDataPromise?: Promise<void>;
+    #session?: WsIoClientSession;
     #wakeReconnectWaitAbortController?: AbortController;
 
     // Internal properties
-    _cancelled?: Promise<void>;
     readonly _client: WsIoClient;
     readonly _config: Readonly<ResolvedWsIoClientConfig>;
     readonly _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
+    _cancelled?: Promise<void>;
     _wakeSendEventDataPromise?: () => void;
 
     constructor(client: WsIoClient, url: string | URL, config?: WsIoClientConfig) {
