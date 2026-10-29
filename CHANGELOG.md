@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.6.1
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.0...v0.6.1)
+
+### 🚀 Enhancements
+
+- **client:** Add session ready and close listeners ([932198f](https://github.com/ws-io/ws.io-ts-client/commit/932198f))
+
+### 📦 Build
+
+- Pin TypeScript override and organize maintenance scripts ([b878c55](https://github.com/ws-io/ws.io-ts-client/commit/b878c55))
+
+### 🏡 Chore
+
+- Upgrade deps ([bb12b9b](https://github.com/ws-io/ws.io-ts-client/commit/bb12b9b))
+
+### 🎨 Styles
+
+- Order readonly class members before mutable ones ([33ce649](https://github.com/ws-io/ws.io-ts-client/commit/33ce649))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.6.0
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.5.0...v0.6.0)
