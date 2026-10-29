@@ -210,6 +210,9 @@ export class WsIoClientSession {
         (async () => await this.#runtime._config.onSessionReadyHandler?.(this))().catch(
             (error) => console.error('ws.io client session ready handler failed', error),
         );
+
+        // Invoke session ready listeners registered through the client
+        this.#runtime._invokeSessionReadyHandlers();
     }
 
     async #runEventDispatcher() {
@@ -268,6 +271,9 @@ export class WsIoClientSession {
             // Set state to Closed
             this.#status.store(SessionStatus.Closed);
         }
+
+        // Invoke session close listeners registered through the client
+        this.#runtime._invokeSessionCloseHandlers();
     }
 
     _close() {

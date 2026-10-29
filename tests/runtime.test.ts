@@ -119,6 +119,96 @@ describe('wsIoClientRuntime', () => {
         await runtime._disconnect();
     });
 
+    it('runs session ready listeners on every ready and immediately only when requested', async () => {
+        vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const client = {} as never;
+        const runtime = new WsIoClientRuntime(client, 'ws://example.test/app', { reconnectDelay: 0 });
+        const handshake = async (ws: FakeRuntimeWebSocket) => {
+            ws.emitOpen();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
+            await flushMicrotasks();
+            ws.emitMessage(wsIoPacketMsgpackCodec.encode({ type: WsIoPacketType.Ready }));
+            await flushMicrotasks();
+        };
+
+        try {
+            const error = new Error('listener failed');
+            const failingListener = vi.fn(() => Promise.reject(error));
+            const earlyListener = vi.fn();
+            const removedListener = vi.fn();
+            runtime._onSessionReady(failingListener);
+            runtime._onSessionReady(earlyListener, true);
+            const removeListener = runtime._onSessionReady(removedListener);
+            expect(earlyListener).not.toHaveBeenCalled();
+
+            await runtime._connect();
+            await handshake(FakeRuntimeWebSocket.instances[0]!);
+            expect(earlyListener).toHaveBeenCalledExactlyOnceWith(client);
+            expect(removedListener).toHaveBeenCalledOnce();
+            await vi.waitFor(
+                () => expect(errorSpy).toHaveBeenCalledWith('ws.io client session ready listener failed', error),
+            );
+
+            const immediateListener = vi.fn();
+            const lazyListener = vi.fn();
+            runtime._onSessionReady(immediateListener, true);
+            runtime._onSessionReady(lazyListener);
+            expect(immediateListener).toHaveBeenCalledExactlyOnceWith(client);
+            expect(lazyListener).not.toHaveBeenCalled();
+
+            removeListener();
+            FakeRuntimeWebSocket.instances[0]!.close();
+            await vi.waitFor(() => expect(FakeRuntimeWebSocket.instances).toHaveLength(2));
+            await handshake(FakeRuntimeWebSocket.instances[1]!);
+
+            expect(failingListener).toHaveBeenCalledTimes(2);
+            expect(earlyListener).toHaveBeenCalledTimes(2);
+            expect(immediateListener).toHaveBeenCalledTimes(2);
+            expect(lazyListener).toHaveBeenCalledOnce();
+            expect(removedListener).toHaveBeenCalledOnce();
+        } finally {
+            errorSpy.mockRestore();
+            await runtime._disconnect();
+        }
+    });
+
+    it('runs session close listeners for each closed session until removed', async () => {
+        vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const client = {} as never;
+        const runtime = new WsIoClientRuntime(client, 'ws://example.test/app', { reconnectDelay: 0 });
+
+        try {
+            const error = new Error('listener failed');
+            const failingListener = vi.fn(() => Promise.reject(error));
+            const listener = vi.fn();
+            const removedListener = vi.fn();
+            runtime._onSessionClose(failingListener);
+            runtime._onSessionClose(listener);
+            const removeListener = runtime._onSessionClose(removedListener);
+
+            await runtime._connect();
+            FakeRuntimeWebSocket.instances[0]!.close();
+            await vi.waitFor(() => expect(listener).toHaveBeenCalledExactlyOnceWith(client));
+            expect(removedListener).toHaveBeenCalledOnce();
+            await vi.waitFor(
+                () => expect(errorSpy).toHaveBeenCalledWith('ws.io client session close listener failed', error),
+            );
+
+            removeListener();
+            await vi.waitFor(() => expect(FakeRuntimeWebSocket.instances).toHaveLength(2));
+            await runtime._disconnect();
+
+            expect(failingListener).toHaveBeenCalledTimes(2);
+            expect(listener).toHaveBeenCalledTimes(2);
+            expect(removedListener).toHaveBeenCalledOnce();
+        } finally {
+            errorSpy.mockRestore();
+            await runtime._disconnect();
+        }
+    });
+
     it.each([
         [
             'cbor',

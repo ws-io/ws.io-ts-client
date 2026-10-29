@@ -61,6 +61,8 @@ function createRuntime(config: Partial<ResolvedWsIoClientConfig> = {}) {
         },
         _disconnect: vi.fn(async () => {}),
         _eventHandlers: {},
+        _invokeSessionCloseHandlers: vi.fn(),
+        _invokeSessionReadyHandlers: vi.fn(),
         _wakeSendEventDataPromise: vi.fn(),
     } as unknown as WsIoClientRuntime;
 }
@@ -122,10 +124,12 @@ describe('wsIoClientSession', () => {
         expect(session.isReady).toBe(true);
         expect(runtime._wakeSendEventDataPromise).toHaveBeenCalledOnce();
         expect(onSessionReadyHandler).toHaveBeenCalledWith(session);
+        expect(runtime._invokeSessionReadyHandlers).toHaveBeenCalledOnce();
 
         session._close();
         await session._waitForClose;
         await session._cleanup();
+        expect(runtime._invokeSessionCloseHandlers).toHaveBeenCalledOnce();
     });
 
     it('closes the transport when packet handling fails', async () => {
@@ -344,6 +348,15 @@ describe('wsIoClientSession', () => {
             session._close();
             await session._cleanup();
         }
+    });
+
+    it('invokes session close listeners even when the close handler fails', async () => {
+        const onSessionCloseHandler = () => Promise.reject(new Error('close hook failed'));
+        const { runtime, session } = createSession({ onSessionCloseHandler });
+
+        session._close();
+        await session._cleanup();
+        expect(runtime._invokeSessionCloseHandlers).toHaveBeenCalledOnce();
     });
 
     it('does not revive a closing session on a late websocket open', () => {

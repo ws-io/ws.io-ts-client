@@ -1,5 +1,6 @@
 import { defu } from 'defu';
 import Mutex from 'p-mutex';
+import type { Promisable } from 'type-fest';
 
 import { AtomicStatus } from './core/atomic/status';
 import { WsIoPacket } from './core/packet';
@@ -18,6 +19,8 @@ import { AsyncQueue } from './utils/queue';
 
 import type { WsIoClient } from './';
 
+export type SessionHandler = (client: WsIoClient) => Promisable<void>;
+
 // Enums
 enum RuntimeStatus {
     Running,
@@ -32,10 +35,13 @@ export class WsIoClientRuntime {
     #connectionLoopPromise?: Promise<void>;
     readonly #connectUrl: URL;
     #nextEventHandlerId = 0;
+    #nextSessionHandlerId = 0;
     readonly #operateLock = new Mutex();
     #sendEventDataPromise?: Promise<void>;
     readonly #sendEventDataQueue = new AsyncQueue<WsIoEncodedPacketData>();
     #session?: WsIoClientSession;
+    readonly #sessionCloseHandlers = new Map<number, SessionHandler>();
+    readonly #sessionReadyHandlers = new Map<number, SessionHandler>();
     readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
     #wakeReconnectWaitAbortController?: AbortController;
 
@@ -77,9 +83,29 @@ export class WsIoClientRuntime {
     }
 
     // Private methods
+    #addSessionHandler(handlers: Map<number, SessionHandler>, handler: SessionHandler) {
+        const handlerId = this.#nextSessionHandlerId++;
+        handlers.set(handlerId, handler);
+        return () => void handlers.delete(handlerId);
+    }
+
     async #closeSessionAndWait(session: WsIoClientSession) {
         session._close();
         await waitWithTimeout(this._config.disconnectTimeout, session._waitForClose).catch(() => {});
+    }
+
+    #invokeSessionHandler(handler: SessionHandler, kind: 'close' | 'ready') {
+        (async () => await handler(this._client))().catch(
+            (error) => console.error(`ws.io client session ${kind} listener failed`, error),
+        );
+    }
+
+    #invokeSessionHandlers(handlers: Map<number, SessionHandler>, kind: 'close' | 'ready') {
+        // Snapshot ids so listeners added during dispatch do not run for the current session
+        for (const handlerId of [...handlers.keys()]) {
+            const handler = handlers.get(handlerId);
+            if (handler) this.#invokeSessionHandler(handler, kind);
+        }
     }
 
     async #runConnection() {
@@ -227,6 +253,14 @@ export class WsIoClientRuntime {
         );
     }
 
+    _invokeSessionCloseHandlers() {
+        this.#invokeSessionHandlers(this.#sessionCloseHandlers, 'close');
+    }
+
+    _invokeSessionReadyHandlers() {
+        this.#invokeSessionHandlers(this.#sessionReadyHandlers, 'ready');
+    }
+
     _on(event: string, callback: (...args: any[]) => any) {
         if (!event) throw new Error('Event key cannot be empty');
         const handlers = this._eventHandlers[event] ||= new Map();
@@ -245,6 +279,16 @@ export class WsIoClientRuntime {
             handlers.delete(handlerId);
             if (!handlers.size) this._off(event);
         }
+    }
+
+    _onSessionClose(handler: SessionHandler) {
+        return this.#addSessionHandler(this.#sessionCloseHandlers, handler);
+    }
+
+    _onSessionReady(handler: SessionHandler, immediate = false) {
+        const removeHandler = this.#addSessionHandler(this.#sessionReadyHandlers, handler);
+        if (immediate && this._isSessionReady) this.#invokeSessionHandler(handler, 'ready');
+        return removeHandler;
     }
 }
 

@@ -17,8 +17,10 @@ export interface WsIoClientConfig {
     initHandler?: (session: WsIoClientSession, data?: any) => Promisable<any>;
     initHandlerTimeout?: number;
     initPacketTimeout?: number;
+    // Runs once per session on cleanup and is awaited; use client.onSessionClose for more listeners
     onSessionCloseHandler?: (session: WsIoClientSession) => Promisable<void>;
     onSessionCloseHandlerTimeout?: number;
+    // Runs once per session on ready, including after reconnects; use client.onSessionReady for more listeners
     onSessionReadyHandler?: (session: WsIoClientSession) => Promisable<void>;
     packetCodec?: WsIoPacketCodec;
     pingInterval?: number;

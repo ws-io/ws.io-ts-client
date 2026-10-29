@@ -1,6 +1,7 @@
 import type { Promisable } from 'type-fest';
 
 import { WsIoClientRuntime } from './runtime';
+import type { SessionHandler } from './runtime';
 import type {
     DefaultEventsMap,
     EventsMap,
@@ -60,6 +61,14 @@ export class WsIoClient<
     offByHandlerId(event: keyof ToClientEvents | (string & {}), handlerId: number) {
         assertEventKey(event);
         this.#runtime._offByHandlerId(event, handlerId);
+    }
+
+    onSessionClose(handler: (client: this) => Promisable<void>) {
+        return this.#runtime._onSessionClose(handler as SessionHandler);
+    }
+
+    onSessionReady(handler: (client: this) => Promisable<void>, options?: { immediate?: boolean }) {
+        return this.#runtime._onSessionReady(handler as SessionHandler, options?.immediate);
     }
 }
 
