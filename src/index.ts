@@ -13,9 +13,9 @@ export class WsIoClient<
     ToServerEvents extends EventsMap = DefaultEventsMap,
     ToClientEvents extends EventsMap = DefaultEventsMap,
 > {
-    readonly #runtime: WsIoClientRuntime;
+    readonly #runtime: WsIoClientRuntime<ToServerEvents, ToClientEvents>;
 
-    constructor(url: string | URL, config?: WsIoClientConfig) {
+    constructor(url: string | URL, config?: WsIoClientConfig<ToServerEvents, ToClientEvents>) {
         this.#runtime = new WsIoClientRuntime(this, url, config);
     }
 
@@ -64,11 +64,14 @@ export class WsIoClient<
     }
 
     onSessionClose(handler: (client: this) => Promisable<void>) {
-        return this.#runtime._onSessionClose(handler as SessionHandler);
+        return this.#runtime._onSessionClose(handler as SessionHandler<ToServerEvents, ToClientEvents>);
     }
 
     onSessionReady(handler: (client: this) => Promisable<void>, options?: { immediate?: boolean }) {
-        return this.#runtime._onSessionReady(handler as SessionHandler, options?.immediate);
+        return this.#runtime._onSessionReady(
+            handler as SessionHandler<ToServerEvents, ToClientEvents>,
+            options?.immediate,
+        );
     }
 }
 

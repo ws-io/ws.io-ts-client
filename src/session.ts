@@ -6,6 +6,10 @@ import {
 import type { WsIoPacketData } from './core/packet';
 import type { WsIoEncodedPacketData } from './core/packet/codecs';
 import type { WsIoClientRuntime } from './runtime';
+import type {
+    DefaultEventsMap,
+    EventsMap,
+} from './types';
 import { waitWithTimeout } from './utils';
 import { AsyncQueue } from './utils/queue';
 
@@ -23,13 +27,16 @@ enum SessionStatus {
 }
 
 // Classes
-export class WsIoClientSession {
+export class WsIoClientSession<
+    ToServerEvents extends EventsMap = DefaultEventsMap,
+    ToClientEvents extends EventsMap = DefaultEventsMap,
+> {
     // Private properties
     readonly #eventDispatchAbortController = new AbortController();
     readonly #eventDispatchAbortPromise: Promise<void>;
     readonly #eventDispatchPromise: Promise<void>;
     readonly #eventQueue = new AsyncQueue<WsIoPacket>();
-    readonly #runtime: WsIoClientRuntime;
+    readonly #runtime: WsIoClientRuntime<ToServerEvents, ToClientEvents>;
     readonly #status = new AtomicStatus(SessionStatus.Created);
     readonly #ws: WebSocket;
     #initTimeoutTimeout?: NodeJS.Timeout;
@@ -40,7 +47,7 @@ export class WsIoClientSession {
     // Internal properties
     readonly _waitForClose: Promise<CloseEvent | undefined>;
 
-    constructor(runtime: WsIoClientRuntime, ws: WebSocket) {
+    constructor(runtime: WsIoClientRuntime<ToServerEvents, ToClientEvents>, ws: WebSocket) {
         this.#runtime = runtime;
         this.#ws = ws;
         this.#eventDispatchAbortPromise = new Promise((resolve) => {

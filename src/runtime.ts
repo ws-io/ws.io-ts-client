@@ -8,6 +8,10 @@ import type { WsIoEncodedPacketData } from './core/packet/codecs';
 import { wsIoPacketMsgpackCodec } from './core/packet/codecs/msgpack';
 import { WsIoClientSession } from './session';
 import type {
+    DefaultEventsMap,
+    EventsMap,
+} from './types';
+import type {
     ResolvedWsIoClientConfig,
     WsIoClientConfig,
 } from './types/config';
@@ -19,7 +23,10 @@ import { AsyncQueue } from './utils/queue';
 
 import type { WsIoClient } from './';
 
-export type SessionHandler = (client: WsIoClient) => Promisable<void>;
+export type SessionHandler<
+    ToServerEvents extends EventsMap = DefaultEventsMap,
+    ToClientEvents extends EventsMap = DefaultEventsMap,
+> = (client: WsIoClient<ToServerEvents, ToClientEvents>) => Promisable<void>;
 
 // Enums
 enum RuntimeStatus {
@@ -29,30 +36,37 @@ enum RuntimeStatus {
 }
 
 // Classes
-export class WsIoClientRuntime {
+export class WsIoClientRuntime<
+    ToServerEvents extends EventsMap = DefaultEventsMap,
+    ToClientEvents extends EventsMap = DefaultEventsMap,
+> {
     // Private properties
     readonly #connectUrl: URL;
     readonly #operateLock = new Mutex();
     readonly #sendEventDataQueue = new AsyncQueue<WsIoEncodedPacketData>();
-    readonly #sessionCloseHandlers = new Map<number, SessionHandler>();
-    readonly #sessionReadyHandlers = new Map<number, SessionHandler>();
+    readonly #sessionCloseHandlers = new Map<number, SessionHandler<ToServerEvents, ToClientEvents>>();
+    readonly #sessionReadyHandlers = new Map<number, SessionHandler<ToServerEvents, ToClientEvents>>();
     readonly #status = new AtomicStatus(RuntimeStatus.Stopped);
     #cancel?: () => void;
     #connectionLoopPromise?: Promise<void>;
     #nextEventHandlerId = 0;
     #nextSessionHandlerId = 0;
     #sendEventDataPromise?: Promise<void>;
-    #session?: WsIoClientSession;
+    #session?: WsIoClientSession<ToServerEvents, ToClientEvents>;
     #wakeReconnectWaitAbortController?: AbortController;
 
     // Internal properties
-    readonly _client: WsIoClient;
-    readonly _config: Readonly<ResolvedWsIoClientConfig>;
+    readonly _client: WsIoClient<ToServerEvents, ToClientEvents>;
+    readonly _config: Readonly<ResolvedWsIoClientConfig<ToServerEvents, ToClientEvents>>;
     readonly _eventHandlers: Record<string, Map<number, (...args: any[]) => any>> = {};
     _cancelled?: Promise<void>;
     _wakeSendEventDataPromise?: () => void;
 
-    constructor(client: WsIoClient, url: string | URL, config?: WsIoClientConfig) {
+    constructor(
+        client: WsIoClient<ToServerEvents, ToClientEvents>,
+        url: string | URL,
+        config?: WsIoClientConfig<ToServerEvents, ToClientEvents>,
+    ) {
         if (typeof url === 'string') url = new URL(url);
         if (url.protocol !== 'ws:' && url.protocol !== 'wss:') {
             throw new Error(`Invalid URL scheme: ${url.protocol.slice(0, -1)}`);
@@ -71,7 +85,7 @@ export class WsIoClientRuntime {
                 readyPacketTimeout: 5 * 1000,
                 reconnectDelay: 1 * 1000,
                 requestPath: '/ws.io',
-            } satisfies ResolvedWsIoClientConfig,
+            } satisfies ResolvedWsIoClientConfig<ToServerEvents, ToClientEvents>,
         );
 
         const namespace = resolvePath(url.pathname);
@@ -83,24 +97,30 @@ export class WsIoClientRuntime {
     }
 
     // Private methods
-    #addSessionHandler(handlers: Map<number, SessionHandler>, handler: SessionHandler) {
+    #addSessionHandler(
+        handlers: Map<number, SessionHandler<ToServerEvents, ToClientEvents>>,
+        handler: SessionHandler<ToServerEvents, ToClientEvents>,
+    ) {
         const handlerId = this.#nextSessionHandlerId++;
         handlers.set(handlerId, handler);
         return () => void handlers.delete(handlerId);
     }
 
-    async #closeSessionAndWait(session: WsIoClientSession) {
+    async #closeSessionAndWait(session: WsIoClientSession<ToServerEvents, ToClientEvents>) {
         session._close();
         await waitWithTimeout(this._config.disconnectTimeout, session._waitForClose).catch(() => {});
     }
 
-    #invokeSessionHandler(handler: SessionHandler, kind: 'close' | 'ready') {
+    #invokeSessionHandler(handler: SessionHandler<ToServerEvents, ToClientEvents>, kind: 'close' | 'ready') {
         (async () => await handler(this._client))().catch(
             (error) => console.error(`ws.io client session ${kind} listener failed`, error),
         );
     }
 
-    #invokeSessionHandlers(handlers: Map<number, SessionHandler>, kind: 'close' | 'ready') {
+    #invokeSessionHandlers(
+        handlers: Map<number, SessionHandler<ToServerEvents, ToClientEvents>>,
+        kind: 'close' | 'ready',
+    ) {
         // Snapshot ids so listeners added during dispatch do not run for the current session
         for (const handlerId of [...handlers.keys()]) {
             const handler = handlers.get(handlerId);
@@ -281,11 +301,11 @@ export class WsIoClientRuntime {
         }
     }
 
-    _onSessionClose(handler: SessionHandler) {
+    _onSessionClose(handler: SessionHandler<ToServerEvents, ToClientEvents>) {
         return this.#addSessionHandler(this.#sessionCloseHandlers, handler);
     }
 
-    _onSessionReady(handler: SessionHandler, immediate = false) {
+    _onSessionReady(handler: SessionHandler<ToServerEvents, ToClientEvents>, immediate = false) {
         const removeHandler = this.#addSessionHandler(this.#sessionReadyHandlers, handler);
         if (immediate && this._isSessionReady) this.#invokeSessionHandler(handler, 'ready');
         return removeHandler;
