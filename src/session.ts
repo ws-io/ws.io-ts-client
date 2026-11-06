@@ -1,17 +1,17 @@
-import { AtomicStatus } from './core/atomic/status';
+import { AsyncQueue } from './_internals/async-queue';
+import { AtomicStatus } from './_internals/atomic-status';
+import type { WsIoClientRuntime } from './_internals/runtime';
+import { waitWithTimeout } from './_internals/timing';
 import {
     WsIoPacket,
     WsIoPacketType,
 } from './core/packet';
 import type { WsIoPacketData } from './core/packet';
 import type { WsIoEncodedPacketData } from './core/packet/codecs';
-import type { WsIoClientRuntime } from './runtime';
 import type {
     DefaultEventsMap,
     EventsMap,
 } from './types';
-import { waitWithTimeout } from './utils';
-import { AsyncQueue } from './utils/queue';
 
 type WsIoWebSocketData = ArrayBuffer | ArrayBufferView<ArrayBuffer>;
 
@@ -61,7 +61,7 @@ export class WsIoClientSession<
             ws.onclose = (event) => this.#finishClose(event);
         });
 
-        ws.onmessage = (event) => this.#handleIncomingPacket(event.data).catch(() => this._close());
+        ws.onmessage = async (event) => await this.#handleIncomingPacket(event.data).catch(() => this._close());
         ws.onopen = () => {
             if (!this.#status.is(SessionStatus.Created)) {
                 this.#closeWebSocket();
@@ -107,7 +107,7 @@ export class WsIoClientSession<
 
         const data = packet.data ? this.#runtime._config.packetCodec.decodeData<any[]>(packet.data) || [] : [];
         const handlersPromise = Promise.all(
-            [...handlers.values()].map((handler) => Promise.resolve()
+            [...handlers.values()].map(async (handler) => await Promise.resolve()
                 .then(() => {
                     if (this.#eventDispatchAbortController.signal.aborted || !this.isReady) return;
                     return handler(...data);

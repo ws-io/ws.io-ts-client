@@ -1,17 +1,16 @@
 import {
     describe,
-    expect,
     it,
 } from 'vitest';
 
-import { AtomicStatus } from '../src/core/atomic/status';
+import { AtomicStatus } from '../src/_internals/atomic-status';
 import {
     getEnumNumberValues,
     getEnumValues,
-} from '../src/utils/enum';
+} from '../src/_internals/enum';
 
 describe.concurrent('atomicStatus', () => {
-    it('guards current status and validates transitions', () => {
+    it('should guard current status and validates transitions', ({ expect }) => {
         const status = new AtomicStatus('created');
 
         expect(status.is('created')).toBe(true);
@@ -24,7 +23,7 @@ describe.concurrent('atomicStatus', () => {
 });
 
 describe.concurrent('enum helpers', () => {
-    it('filters TypeScript numeric enum reverse mappings', () => {
+    it('should filter TypeScript numeric enum reverse mappings', ({ expect }) => {
         enum MixedEnum {
             First,
             Second,

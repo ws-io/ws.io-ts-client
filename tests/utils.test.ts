@@ -1,18 +1,17 @@
 import {
     describe,
-    expect,
     it,
     vi,
 } from 'vitest';
 
+import { AsyncQueue } from '../src/_internals/async-queue';
 import {
-    sleep,
+    delay,
     waitWithTimeout,
-} from '../src/utils';
-import { AsyncQueue } from '../src/utils/queue';
+} from '../src/_internals/timing';
 
 describe.concurrent('asyncQueue', () => {
-    it('delivers a send to an already waiting receiver', async () => {
+    it('should deliver a send to an already waiting receiver', async ({ expect }) => {
         const queue = new AsyncQueue<string>();
         const received = queue.recv();
 
@@ -21,7 +20,7 @@ describe.concurrent('asyncQueue', () => {
         await expect(received).resolves.toBe('value');
     });
 
-    it('drains buffered values then stops iteration after close', async () => {
+    it('should drain buffered values then stops iteration after close', async ({ expect }) => {
         const queue = new AsyncQueue<number>();
         queue.send(1);
         queue.send(2);
@@ -33,7 +32,7 @@ describe.concurrent('asyncQueue', () => {
         expect(values).toStrictEqual([]);
     });
 
-    it('releases pending receivers with null on close and can reopen', async () => {
+    it('should release pending receivers with null on close and can reopen', async ({ expect }) => {
         const queue = new AsyncQueue<string>();
         const pending = queue.recv();
 
@@ -48,11 +47,11 @@ describe.concurrent('asyncQueue', () => {
 });
 
 describe('async timing utilities', () => {
-    it('resolves sleep early when aborted', async () => {
+    it('should resolve delay early when aborted', async ({ expect }) => {
         vi.useFakeTimers();
         try {
             const controller = new AbortController();
-            const promise = sleep(1_000, controller.signal);
+            const promise = delay(1_000, controller.signal);
 
             controller.abort();
             await expect(promise).resolves.toBeUndefined();
@@ -61,12 +60,13 @@ describe('async timing utilities', () => {
         }
     });
 
-    it('rejects waitWithTimeout when the operation does not settle in time', async () => {
+    it('should reject waitWithTimeout when the operation does not settle in time', async ({ expect }) => {
         vi.useFakeTimers();
         try {
-            const promise = expect(waitWithTimeout(10, new Promise(() => {}))).rejects.toThrow('Timeout');
-            await vi.advanceTimersByTimeAsync(10);
-            await promise;
+            await Promise.all([
+                expect(waitWithTimeout(10, new Promise(() => {}))).rejects.toThrow('Timeout'),
+                vi.advanceTimersByTimeAsync(10),
+            ]);
         } finally {
             vi.useRealTimers();
         }

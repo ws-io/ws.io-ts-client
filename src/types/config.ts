@@ -1,7 +1,4 @@
-import type {
-    Promisable,
-    SetOptional,
-} from 'type-fest';
+import type { Promisable } from 'type-fest';
 
 import type { WsIoPacketCodec } from '../core/packet/codecs';
 import type { WsIoClientSession } from '../session';
@@ -10,14 +7,6 @@ import type {
     DefaultEventsMap,
     EventsMap,
 } from './';
-
-export type ResolvedWsIoClientConfig<
-    ToServerEvents extends EventsMap = DefaultEventsMap,
-    ToClientEvents extends EventsMap = DefaultEventsMap,
-> = SetOptional<
-    Required<WsIoClientConfig<ToServerEvents, ToClientEvents>>,
-    'initHandler' | 'onSessionCloseHandler' | 'onSessionReadyHandler'
->;
 
 export interface WsIoClientConfig<
     ToServerEvents extends EventsMap = DefaultEventsMap,

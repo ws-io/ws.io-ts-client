@@ -1,11 +1,11 @@
 import {
     afterEach,
     describe,
-    expect,
     it,
     vi,
 } from 'vitest';
 
+import { WsIoClientRuntime } from '../src/_internals/runtime';
 import {
     WsIoPacket,
     WsIoPacketType,
@@ -16,7 +16,6 @@ import type {
 } from '../src/core/packet/codecs';
 import { wsIoPacketCborCodec } from '../src/core/packet/codecs/cbor';
 import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
-import { WsIoClientRuntime } from '../src/runtime';
 
 class FakeRuntimeWebSocket {
     static readonly instances: FakeRuntimeWebSocket[] = [];
@@ -74,7 +73,7 @@ describe('wsIoClientRuntime', () => {
         FakeRuntimeWebSocket.reset();
     });
 
-    it('connects to configured requestPath while preserving namespace in query', async () => {
+    it('should connect to configured requestPath while preserving namespace in query', async ({ expect }) => {
         vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
         const runtime = new WsIoClientRuntime(
             {} as never,
@@ -91,7 +90,7 @@ describe('wsIoClientRuntime', () => {
         await runtime._disconnect();
     });
 
-    it('flushes queued emits after session ready wakes the send loop', async () => {
+    it('should flush queued emits after session ready wakes the send loop', async ({ expect }) => {
         vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
         const runtime = new WsIoClientRuntime(
             {} as never,
@@ -119,7 +118,7 @@ describe('wsIoClientRuntime', () => {
         await runtime._disconnect();
     });
 
-    it('runs session ready listeners on every ready and immediately only when requested', async () => {
+    it('should run session ready listeners on every ready and immediately only when requested', async ({ expect }) => {
         vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
         const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const client = {} as never;
@@ -134,7 +133,7 @@ describe('wsIoClientRuntime', () => {
 
         try {
             const error = new Error('listener failed');
-            const failingListener = vi.fn(() => Promise.reject(error));
+            const failingListener = vi.fn(async () => await Promise.reject(error));
             const earlyListener = vi.fn();
             const removedListener = vi.fn();
             runtime._onSessionReady(failingListener);
@@ -173,7 +172,7 @@ describe('wsIoClientRuntime', () => {
         }
     });
 
-    it('runs session close listeners for each closed session until removed', async () => {
+    it('should run session close listeners for each closed session until removed', async ({ expect }) => {
         vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
         const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const client = {} as never;
@@ -181,7 +180,7 @@ describe('wsIoClientRuntime', () => {
 
         try {
             const error = new Error('listener failed');
-            const failingListener = vi.fn(() => Promise.reject(error));
+            const failingListener = vi.fn(async () => await Promise.reject(error));
             const listener = vi.fn();
             const removedListener = vi.fn();
             runtime._onSessionClose(failingListener);
@@ -209,7 +208,7 @@ describe('wsIoClientRuntime', () => {
         }
     });
 
-    it.each([
+    it.for([
         [
             'cbor',
             wsIoPacketCborCodec,
@@ -219,8 +218,8 @@ describe('wsIoClientRuntime', () => {
             wsIoPacketMsgpackCodec,
         ],
     ] as const)(
-        'roundtrips %s packets through runtime and websocket transport',
-        async (_name, codec) => {
+        'should roundtrip %s packets through runtime and websocket transport',
+        async ([_name, codec], { expect }) => {
             vi.stubGlobal('WebSocket', FakeRuntimeWebSocket);
             const eventHandler = vi.fn();
             const runtime = new WsIoClientRuntime(

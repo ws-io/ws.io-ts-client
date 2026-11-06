@@ -1,4 +1,4 @@
-import { getEnumNumberValues } from '../../utils/enum';
+import { getEnumNumberValues } from '../../_internals/enum';
 
 export type InnerPacket = [WsIoPacketType, null | string, null | WsIoPacketData];
 export type WsIoPacketData = ArrayBufferView<ArrayBufferLike>;

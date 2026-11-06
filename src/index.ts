@@ -1,7 +1,7 @@
 import type { Promisable } from 'type-fest';
 
-import { WsIoClientRuntime } from './runtime';
-import type { SessionHandler } from './runtime';
+import { WsIoClientRuntime } from './_internals/runtime';
+import type { SessionHandler } from './_internals/runtime';
 import type {
     DefaultEventsMap,
     EventsMap,
@@ -29,12 +29,12 @@ export class WsIoClient<
     }
 
     // Public methods
-    connect() {
-        return this.#runtime._connect();
+    async connect() {
+        return await this.#runtime._connect();
     }
 
-    disconnect() {
-        return this.#runtime._disconnect();
+    async disconnect() {
+        return await this.#runtime._disconnect();
     }
 
     emit<E extends keyof ToServerEvents | (string & {})>(

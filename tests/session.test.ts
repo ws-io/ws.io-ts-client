@@ -1,19 +1,18 @@
 import {
     describe,
-    expect,
     it,
     vi,
 } from 'vitest';
 
+import type { ResolvedWsIoClientConfig } from '../src/_internals/config';
+import type { WsIoClientRuntime } from '../src/_internals/runtime';
 import {
     WsIoPacket,
     WsIoPacketType,
 } from '../src/core/packet';
 import type { WsIoEncodedPacketData } from '../src/core/packet/codecs';
 import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
-import type { WsIoClientRuntime } from '../src/runtime';
 import { WsIoClientSession } from '../src/session';
-import type { ResolvedWsIoClientConfig } from '../src/types/config';
 
 class FakeWebSocket {
     readonly sent: unknown[] = [];
@@ -95,7 +94,7 @@ async function waitFor(predicate: () => boolean) {
 
 // Keep lifecycle tests sequential: mock clearing and the console spy are shared.
 describe('wsIoClientSession', () => {
-    it('performs init to ready handshake and wakes buffered emit flushing', async () => {
+    it('should perform init to ready handshake and wakes buffered emit flushing', async ({ expect }) => {
         const initHandler = vi.fn(() => ['client-init']);
         const onSessionReadyHandler = vi.fn();
         const {
@@ -133,7 +132,7 @@ describe('wsIoClientSession', () => {
         expect(runtime._invokeSessionCloseHandlers).toHaveBeenCalledOnce();
     });
 
-    it('closes the transport when packet handling fails', async () => {
+    it('should close the transport when packet handling fails', async ({ expect }) => {
         const { session, ws } = createSession();
 
         ws.emitOpen();
@@ -144,7 +143,7 @@ describe('wsIoClientSession', () => {
         await session._cleanup();
     });
 
-    it('closes the transport when receiving an event with an empty key', async () => {
+    it('should close the transport when receiving an event with an empty key', async ({ expect }) => {
         const { session, ws } = createSession();
 
         ws.emitOpen();
@@ -166,7 +165,7 @@ describe('wsIoClientSession', () => {
         await session._cleanup();
     });
 
-    it('isolates user event handler failures from the transport lifecycle', async () => {
+    it('should isolate user event handler failures from the transport lifecycle', async ({ expect }) => {
         const handler = vi.fn(() => {
             throw new Error('handler failed');
         });
@@ -205,7 +204,7 @@ describe('wsIoClientSession', () => {
         await session._cleanup();
     });
 
-    it('dispatches incoming events in wire order and waits for each event', async () => {
+    it('should dispatch incoming events in wire order and waits for each event', async ({ expect }) => {
         const calls: string[] = [];
         let releaseFirst!: () => void;
         const firstHandlerStarted = new Promise<void>((resolve) => {
@@ -260,7 +259,7 @@ describe('wsIoClientSession', () => {
         await session._cleanup();
     });
 
-    it('stops event dispatch during cleanup without waiting for a hanging handler', async () => {
+    it('should stop event dispatch during cleanup without waiting for a hanging handler', async ({ expect }) => {
         let hasStarted = false;
 
         const {
@@ -290,13 +289,13 @@ describe('wsIoClientSession', () => {
         await expect(session._cleanup()).resolves.toBeUndefined();
     });
 
-    it.each([
+    it.for([
         'local',
         'remote',
         'disconnect',
     ] as const)(
-        'stops queued event dispatch immediately on %s close',
-        async (kind) => {
+        'should stop queued event dispatch immediately on %s close',
+        async (kind, { expect }) => {
             const {
                 runtime,
                 session,
@@ -331,10 +330,10 @@ describe('wsIoClientSession', () => {
         },
     );
 
-    it('reports ready handler failures without closing the session', async () => {
+    it('should report ready handler failures without closing the session', async ({ expect }) => {
         const error = new Error('ready hook failed');
         const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        const { session, ws } = createSession({ onSessionReadyHandler: () => Promise.reject(error) });
+        const { session, ws } = createSession({ onSessionReadyHandler: async () => await Promise.reject(error) });
         try {
             ws.emitOpen();
             ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
@@ -351,8 +350,8 @@ describe('wsIoClientSession', () => {
         }
     });
 
-    it('invokes session close listeners even when the close handler fails', async () => {
-        const onSessionCloseHandler = () => Promise.reject(new Error('close hook failed'));
+    it('should invoke session close listeners even when the close handler fails', async ({ expect }) => {
+        const onSessionCloseHandler = async () => await Promise.reject(new Error('close hook failed'));
         const { runtime, session } = createSession({ onSessionCloseHandler });
 
         session._close();
@@ -360,7 +359,7 @@ describe('wsIoClientSession', () => {
         expect(runtime._invokeSessionCloseHandlers).toHaveBeenCalledOnce();
     });
 
-    it('does not revive a closing session on a late websocket open', () => {
+    it('should not revive a closing session on a late websocket open', ({ expect }) => {
         const { session, ws } = createSession();
         ws.autoClose = false;
 

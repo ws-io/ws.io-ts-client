@@ -6,9 +6,9 @@ import {
 
 import { WsIoPacket } from '../';
 import type { WsIoPacketData } from '../';
-import { isBrowser } from '../../../constants';
+import { isBrowser } from '../../../_internals/environment';
+import { packetDataToUint8Array } from '../../../_internals/packet-data';
 
-import { packetDataToUint8Array } from './';
 import type { WsIoPacketCodec } from './';
 
 if (!isNativeAccelerationEnabled && !isBrowser) {

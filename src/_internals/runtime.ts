@@ -2,26 +2,24 @@ import { defu } from 'defu';
 import Mutex from 'p-mutex';
 import type { Promisable } from 'type-fest';
 
-import { AtomicStatus } from './core/atomic/status';
-import { WsIoPacket } from './core/packet';
-import type { WsIoEncodedPacketData } from './core/packet/codecs';
-import { wsIoPacketMsgpackCodec } from './core/packet/codecs/msgpack';
-import { WsIoClientSession } from './session';
+import type { WsIoClient } from '../';
+import { WsIoPacket } from '../core/packet';
+import type { WsIoEncodedPacketData } from '../core/packet/codecs';
+import { wsIoPacketMsgpackCodec } from '../core/packet/codecs/msgpack';
+import { WsIoClientSession } from '../session';
 import type {
     DefaultEventsMap,
     EventsMap,
-} from './types';
-import type {
-    ResolvedWsIoClientConfig,
-    WsIoClientConfig,
-} from './types/config';
-import {
-    sleep,
-    waitWithTimeout,
-} from './utils';
-import { AsyncQueue } from './utils/queue';
+} from '../types';
+import type { WsIoClientConfig } from '../types/config';
 
-import type { WsIoClient } from './';
+import { AsyncQueue } from './async-queue';
+import { AtomicStatus } from './atomic-status';
+import type { ResolvedWsIoClientConfig } from './config';
+import {
+    delay,
+    waitWithTimeout,
+} from './timing';
 
 export type SessionHandler<
     ToServerEvents extends EventsMap = DefaultEventsMap,
@@ -145,7 +143,7 @@ export class WsIoClientRuntime<
                     await this.#closeSessionAndWait(session);
                 })(),
                 (async () => {
-                    await sleep(this._config.connectTimeout, connectTimeoutAbortController.signal);
+                    await delay(this._config.connectTimeout, connectTimeoutAbortController.signal);
                     if (connectTimeoutAbortController.signal.aborted) return;
 
                     if (session._isCreated) {
@@ -191,7 +189,7 @@ export class WsIoClientRuntime<
                     await this.#runConnection();
                     if (this.#status.is(RuntimeStatus.Running)) {
                         this.#wakeReconnectWaitAbortController = new AbortController();
-                        await sleep(this._config.reconnectDelay, this.#wakeReconnectWaitAbortController.signal);
+                        await delay(this._config.reconnectDelay, this.#wakeReconnectWaitAbortController.signal);
                     }
                 }
             })();

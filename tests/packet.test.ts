@@ -1,6 +1,5 @@
 import {
     describe,
-    expect,
     it,
 } from 'vitest';
 
@@ -12,7 +11,7 @@ import type { WsIoPacketCodec } from '../src/core/packet/codecs';
 import { wsIoPacketCborCodec } from '../src/core/packet/codecs/cbor';
 import { wsIoPacketMsgpackCodec } from '../src/core/packet/codecs/msgpack';
 
-const binaryCodecs: readonly (readonly [string, WsIoPacketCodec])[] = [
+const binaryCodecs: ReadonlyArray<readonly [string, WsIoPacketCodec]> = [
     [
         'cbor',
         wsIoPacketCborCodec,
@@ -24,7 +23,7 @@ const binaryCodecs: readonly (readonly [string, WsIoPacketCodec])[] = [
 ];
 
 describe.concurrent('wsIoPacket', () => {
-    it('normalizes nullable inner fields to absent public fields', () => {
+    it('should normalize nullable inner fields to absent public fields', ({ expect }) => {
         expect(WsIoPacket.fromInner([
             WsIoPacketType.Ready,
             null,
@@ -36,7 +35,7 @@ describe.concurrent('wsIoPacket', () => {
         });
     });
 
-    it('rejects malformed inner packet shape at protocol boundary', () => {
+    it('should reject malformed inner packet shape at protocol boundary', ({ expect }) => {
         expect(() => WsIoPacket.fromInner([
             99 as WsIoPacketType,
             null,
@@ -72,15 +71,15 @@ describe.concurrent('wsIoPacket', () => {
         ])).toThrow('Invalid packet data');
     });
 
-    it('rejects text packet payloads at the codec boundary', () => {
+    it('should reject text packet payloads at the codec boundary', ({ expect }) => {
         expect(() => wsIoPacketMsgpackCodec.decode('not binary' as never)).toThrow(
             'expected binary data',
         );
     });
 
-    it.each(binaryCodecs)(
-        'keeps binary %s packet data roundtrippable as bytes',
-        (_name, codec) => {
+    it.for(binaryCodecs)(
+        'should keep binary %s packet data roundtrippable as bytes',
+        ([_name, codec], { expect }) => {
             const data = codec.encodeData([
                 'payload',
                 1,
@@ -102,7 +101,7 @@ describe.concurrent('wsIoPacket', () => {
         },
     );
 
-    it('rejects empty event keys when creating event packets', () => {
+    it('should reject empty event keys when creating event packets', ({ expect }) => {
         expect(() => WsIoPacket.newEvent('')).toThrow('Event key cannot be empty');
     });
 });
