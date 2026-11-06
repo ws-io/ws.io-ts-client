@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.6.3
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.2...v0.6.3)
+
+### 💅 Refactors
+
+- Move implementation details into internal modules ([c0b254b](https://github.com/ws-io/ws.io-ts-client/commit/c0b254b))
+
+### 📦 Build
+
+- Simplify tsdown configuration and add type validation ([5ba0dcb](https://github.com/ws-io/ws.io-ts-client/commit/5ba0dcb))
+
+### 🏡 Chore
+
+- Update pnpm config ([17fefba](https://github.com/ws-io/ws.io-ts-client/commit/17fefba))
+- Refine template export exclusions and script entrypoint ([4ffddaa](https://github.com/ws-io/ws.io-ts-client/commit/4ffddaa))
+- Lint code ([1c5c42d](https://github.com/ws-io/ws.io-ts-client/commit/1c5c42d))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.6.2
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.1...v0.6.2)
