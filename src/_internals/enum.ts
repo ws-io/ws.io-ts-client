@@ -1,10 +1,16 @@
-export function getEnumNumberValues<T extends Record<string, any>>(enumObject: T): Array<Extract<T[keyof T], number>> {
+import {
+    objectKeys,
+    objectValues,
+} from 'ts-extras';
+import type { ValueOf } from 'type-fest';
+
+export function getEnumNumberValues<T extends Record<string, any>>(enumObject: T): Array<Extract<ValueOf<T>, number>> {
     return getEnumValues(enumObject).filter((value) => typeof value === 'number');
 }
 
-export function getEnumValues<T extends Record<string, any>>(enumObject: T): Array<T[keyof T]> {
-    const values = Object.values(enumObject);
+export function getEnumValues<T extends Record<string, any>>(enumObject: T): Array<ValueOf<T>> {
+    const values = objectValues(enumObject);
     const hasNumberValues = values.some((value) => typeof value === 'number');
     if (!hasNumberValues) return values;
-    return Object.keys(enumObject).filter((key) => Number.isNaN(Number(key))).map((key) => enumObject[key]);
+    return objectKeys(enumObject).filter((key) => Number.isNaN(Number(key))).map((key) => enumObject[key]);
 }
