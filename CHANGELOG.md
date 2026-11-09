@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.6.4
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.3...v0.6.4)
+
+### 💅 Refactors
+
+- **scripts:** Rename peer dependency metadata updater to sync ([cc094ef](https://github.com/ws-io/ws.io-ts-client/commit/cc094ef))
+
+### 🏡 Chore
+
+- Lint code ([ee81f39](https://github.com/ws-io/ws.io-ts-client/commit/ee81f39))
+- Upgrade deps and lint code ([dccd90c](https://github.com/ws-io/ws.io-ts-client/commit/dccd90c))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.6.3
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.2...v0.6.3)
