@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.6.5
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.4...v0.6.5)
+
+### 🩹 Fixes
+
+- **client:** Handle runtime and session errors explicitly ([0fecc08](https://github.com/ws-io/ws.io-ts-client/commit/0fecc08))
+
+### 📦 Build
+
+- Generate scoped wildcard package exports from entries ([051558a](https://github.com/ws-io/ws.io-ts-client/commit/051558a))
+
+### 🏡 Chore
+
+- Update ignore files ([aceb847](https://github.com/ws-io/ws.io-ts-client/commit/aceb847))
+- Upgrade deps ([d721631](https://github.com/ws-io/ws.io-ts-client/commit/d721631))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.6.4
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.3...v0.6.4)

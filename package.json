@@ -1,7 +1,7 @@
 {
   "name": "ws.io-client",
   "type": "module",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "",
   "author": "kiki-kanri",
   "license": "MIT",
@@ -15,11 +15,19 @@
     ".": "./dist/index.js",
     "./core/packet": "./dist/core/packet/index.js",
     "./core/packet/codecs": "./dist/core/packet/codecs/index.js",
-    "./core/packet/codecs/cbor": "./dist/core/packet/codecs/cbor.js",
-    "./core/packet/codecs/msgpack": "./dist/core/packet/codecs/msgpack.js",
     "./session": "./dist/session.js",
-    "./types": "./dist/types/index.js",
-    "./types/config": "./dist/types/config.js",
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": null
+    },
+    "./core/*": "./dist/core/*.js",
+    "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "default": null
+    },
+    "./core/packet/codecs/index": null,
+    "./core/packet/index": null,
+    "./types/index": null,
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",
