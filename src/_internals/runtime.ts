@@ -106,7 +106,11 @@ export class WsIoClientRuntime<
 
     async #closeSessionAndWait(session: WsIoClientSession<ToServerEvents, ToClientEvents>) {
         session._close();
-        await waitWithTimeout(this._config.disconnectTimeout, session._waitForClose).catch(() => {});
+        try {
+            await waitWithTimeout(this._config.disconnectTimeout, session._waitForClose);
+        } catch {
+            // Continue cleanup if the WebSocket close event does not arrive in time.
+        }
     }
 
     #invokeSessionHandler(handler: SessionHandler<ToServerEvents, ToClientEvents>, kind: 'close' | 'ready') {
@@ -201,7 +205,9 @@ export class WsIoClientRuntime<
                     while (true) {
                         try {
                             if (this.#session?._emit_event_data(data)) break;
-                        } catch {}
+                        } catch {
+                            // Keep the packet queued and register a wake callback before retrying.
+                        }
 
                         let emitted = false;
                         await new Promise<void>((resolve) => {
@@ -217,7 +223,9 @@ export class WsIoClientRuntime<
                                     emitted = true;
                                     wake();
                                 }
-                            } catch {}
+                            } catch {
+                                // Leave the wake callback registered for the next ready session or shutdown.
+                            }
                         });
 
                         if (

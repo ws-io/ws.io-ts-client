@@ -107,12 +107,16 @@ export class WsIoClientSession<
 
         const data = packet.data ? this.#runtime._config.packetCodec.decodeData<any[]>(packet.data) || [] : [];
         const handlersPromise = Promise.all(
-            [...handlers.values()].map(async (handler) => await Promise.resolve()
-                .then(() => {
-                    if (this.#eventDispatchAbortController.signal.aborted || !this.isReady) return;
-                    return handler(...data);
-                })
-                .catch(() => {})),
+            [...handlers.values()].map(async (handler) => {
+                try {
+                    await Promise.resolve().then(() => {
+                        if (this.#eventDispatchAbortController.signal.aborted || !this.isReady) return;
+                        return handler(...data);
+                    });
+                } catch {
+                    // Let other listeners and later packets continue after a listener fails.
+                }
+            }),
         );
 
         await Promise.race([
@@ -135,7 +139,7 @@ export class WsIoClientSession<
 
     #handleDisconnectPacket() {
         this._close();
-        this.#runtime._disconnect().catch(() => {});
+        this.#runtime._disconnect().catch((error) => console.error('ws.io client disconnect failed', error));
     }
 
     #handleEventPacket(packet: WsIoPacket) {
