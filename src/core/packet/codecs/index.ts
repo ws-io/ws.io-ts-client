@@ -3,7 +3,7 @@ import type {
     WsIoPacketData,
 } from '../';
 
-export type WsIoEncodedPacketData = ArrayBuffer | ArrayBufferView<ArrayBufferLike>;
+export type WsIoEncodedPacketData = ArrayBuffer | ArrayBufferView;
 export type WsIoPacketCodec = Readonly<{
     decode: (data: WsIoEncodedPacketData) => WsIoPacket;
     decodeData: <T>(bytes: WsIoPacketData) => null | T;

@@ -20,7 +20,7 @@ export async function delay(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 export async function waitWithTimeout<T>(timeoutMs: number, promisable?: Promisable<T>): Promise<T | undefined> {
-    if (!promisable) return await Promise.resolve(undefined);
+    if (!promisable) return undefined;
     return await new Promise<T>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
         (promisable instanceof Promise ? promisable : Promise.resolve(promisable))

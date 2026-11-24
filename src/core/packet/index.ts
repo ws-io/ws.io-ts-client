@@ -1,7 +1,7 @@
 import { getEnumNumberValues } from '../../_internals/enum';
 
 export type InnerPacket = [WsIoPacketType, null | string, null | WsIoPacketData];
-export type WsIoPacketData = ArrayBufferView<ArrayBufferLike>;
+export type WsIoPacketData = ArrayBufferView;
 
 // eslint-disable-next-line ts/no-unsafe-declaration-merging
 export interface WsIoPacket {

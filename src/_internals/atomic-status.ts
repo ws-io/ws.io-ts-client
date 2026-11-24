@@ -24,7 +24,7 @@ export class AtomicStatus<T> {
     }
 
     tryTransition(from: T, to: T) {
-        if (this.#status !== from) throw new Error(`Invalid transition from ${this.#status} to ${to}`);
+        if (this.#status !== from) throw new Error(`Invalid transition from ${String(this.#status)} to ${String(to)}`);
         this.#status = to;
     }
 }

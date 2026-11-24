@@ -124,6 +124,7 @@ export class WsIoClientRuntime<
         kind: 'close' | 'ready',
     ) {
         // Snapshot ids so listeners added during dispatch do not run for the current session
+        // eslint-disable-next-line unicorn/no-useless-spread
         for (const handlerId of [...handlers.keys()]) {
             const handler = handlers.get(handlerId);
             if (handler) this.#invokeSessionHandler(handler, kind);

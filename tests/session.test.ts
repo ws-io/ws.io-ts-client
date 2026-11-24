@@ -333,7 +333,12 @@ describe('wsIoClientSession', () => {
     it('should report ready handler failures without closing the session', async ({ expect }) => {
         const error = new Error('ready hook failed');
         const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        const { session, ws } = createSession({ onSessionReadyHandler: async () => await Promise.reject(error) });
+        const { session, ws } = createSession({
+            onSessionReadyHandler: async () => {
+                throw error;
+            },
+        });
+
         try {
             ws.emitOpen();
             ws.emitMessage(wsIoPacketMsgpackCodec.encode(WsIoPacket.newInit()));
@@ -351,7 +356,10 @@ describe('wsIoClientSession', () => {
     });
 
     it('should invoke session close listeners even when the close handler fails', async ({ expect }) => {
-        const onSessionCloseHandler = async () => await Promise.reject(new Error('close hook failed'));
+        const onSessionCloseHandler = async () => {
+            throw new Error('close hook failed');
+        };
+
         const { runtime, session } = createSession({ onSessionCloseHandler });
 
         session._close();

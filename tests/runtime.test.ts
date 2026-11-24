@@ -133,7 +133,10 @@ describe('wsIoClientRuntime', () => {
 
         try {
             const error = new Error('listener failed');
-            const failingListener = vi.fn(async () => await Promise.reject(error));
+            const failingListener = vi.fn(async () => {
+                throw error;
+            });
+
             const earlyListener = vi.fn();
             const removedListener = vi.fn();
             runtime._onSessionReady(failingListener);
@@ -180,7 +183,10 @@ describe('wsIoClientRuntime', () => {
 
         try {
             const error = new Error('listener failed');
-            const failingListener = vi.fn(async () => await Promise.reject(error));
+            const failingListener = vi.fn(async () => {
+                throw error;
+            });
+
             const listener = vi.fn();
             const removedListener = vi.fn();
             runtime._onSessionClose(failingListener);
