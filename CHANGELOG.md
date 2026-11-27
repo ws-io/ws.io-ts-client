@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.7.0
+
+[compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.5...v0.7.0)
+
+### 💅 Refactors
+
+- Satisfy the stricter type-aware lint rules ([da9eb38](https://github.com/ws-io/ws.io-ts-client/commit/da9eb38))
+
+### 📦 Build
+
+- Require Node.js 24.15.0 and target ES2025 ([5563821](https://github.com/ws-io/ws.io-ts-client/commit/5563821))
+
+### 🏡 Chore
+
+- Enable eslint cache and concurrency in lint scripts ([4398cae](https://github.com/ws-io/ws.io-ts-client/commit/4398cae))
+- Upgrade deps ([9f1eb60](https://github.com/ws-io/ws.io-ts-client/commit/9f1eb60))
+- Require a clean working tree for release ([3a64221](https://github.com/ws-io/ws.io-ts-client/commit/3a64221))
+- Upgrade deps ([3981d24](https://github.com/ws-io/ws.io-ts-client/commit/3981d24))
+- Exclude `@kikiutils/tsconfigs` from the minimum release age ([1c89d62](https://github.com/ws-io/ws.io-ts-client/commit/1c89d62))
+- ⚠️  Upgrade deps ([c12838a](https://github.com/ws-io/ws.io-ts-client/commit/c12838a))
+
+### 🤖 CI
+
+- Rewrite test and coverage workflow ([c74a01e](https://github.com/ws-io/ws.io-ts-client/commit/c74a01e))
+
+#### ⚠️ Breaking Changes
+
+- ⚠️  Upgrade deps ([c12838a](https://github.com/ws-io/ws.io-ts-client/commit/c12838a))
+
+### ❤️ Contributors
+
+- Kiki-kanri
+
 ## v0.6.5
 
 [compare changes](https://github.com/ws-io/ws.io-ts-client/compare/v0.6.4...v0.6.5)
